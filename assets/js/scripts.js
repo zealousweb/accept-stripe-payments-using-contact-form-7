@@ -85,6 +85,7 @@
 
         $form.submit(function(event) {
             $('.ajax-loader').css("visibility", "visible");
+            $(".wpcf7").after('<div id="please-wait">Please wait...</div>');
             if ($('.wpcf7-response-output').html() == '') {
                 $('.wpcf7-response-output').hide();
             } else {
@@ -375,6 +376,7 @@
 
                     wpcf7_cf7sa.triggerEvent(data.into, 'mailsent', detail);
                     $('.ajax-loader').css("visibility", "hidden");
+                    $("#please-wait").hide();
                     break;
                 case 'mail_failed':
                     $message.addClass('wpcf7-mail-sent-ng');
@@ -389,6 +391,7 @@
                     $message.addClass('wpcf7-' + customStatusClass);
                     $form.addClass(customStatusClass);
             }
+            
             $('.ajax-loader').css("visibility", "hidden");
             if ($('.wpcf7-response-output').html() == '') {
                 $('.wpcf7-response-output').hide();
