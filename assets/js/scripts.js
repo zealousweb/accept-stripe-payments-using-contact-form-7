@@ -1,6 +1,44 @@
+function setCookie(cname, cvalue, exdays) {
+	const d = new Date();
+	d.setTime(d.getTime() + (exdays*24*60*60*1000));
+	let expires = "expires="+ d.toUTCString();
+	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+	let name = cname + "=";
+	let decodedCookie = decodeURIComponent(document.cookie);
+	let ca = decodedCookie.split(';');
+	for(let i = 0; i <ca.length; i++) {
+		let c = ca[i];
+		while (c.charAt(0) == ' ') {
+		  c = c.substring(1);
+		}
+		if (c.indexOf(name) == 0) {
+		  return c.substring(name.length, c.length);
+		}
+	}
+	return "";
+}
+
 (function($) {
 
     'use strict';
+
+	$("form :input").change(function() {
+		var flag = 'valid';
+		$('form.wpcf7-form input').each( function(i) {
+			if ( $(this).hasClass('wpcf7-validates-as-required') && $(this).val() == '') {
+                flag = 'invalid';
+                jQuery('.wpcf7-submit').prop("disabled",true);
+            }
+		});
+		if( getCookie("wp-sfrom")==1 && flag == 'valid'  ) {
+			$('.wpcf7-submit').prop("disabled",false);
+		} else {
+			$('.wpcf7-submit').prop("disabled",true);
+		}
+	});
 
     if (typeof wpcf7 === 'undefined' || wpcf7 === null) {
         return;
@@ -15,11 +53,8 @@
         wpcf7_cf7sa.supportHtml5 = (function() {
             var features = {};
             var input = document.createElement('input');
-
             features.placeholder = 'placeholder' in input;
-
             var inputTypes = ['email', 'url', 'tel', 'number', 'range', 'date'];
-
             $.each(inputTypes, function(index, value) {
                 input.setAttribute('type', value);
                 features[value] = input.type !== 'text';
@@ -39,16 +74,14 @@
     });
 
 
-
     wpcf7_cf7sa.getId = function(form) {
         return parseInt($('input[name="_wpcf7"]', form).val(), 10);
     };
 
     wpcf7_cf7sa.initForm = function(form) {
+		$('.wpcf7-submit').prop("disabled",true);
         var $form = $(form);
-
         var form_id = wpcf7_cf7sa.getId($form);
-
         var stripe;
         var elements;
         var card;
@@ -66,7 +99,8 @@
 
             // Handle real-time validation errors from the card Element.
             card.addEventListener('change', function(event) {
-                //var displayError = document.getElementById('card-errors-' + form_id);
+				setCookie("wp-sfrom", 0, 1);
+				$('.wpcf7-submit').prop("disabled",true);
                 if (event.error) {
                     //displayError.textContent = event.error.message;
                     if ($('.credit_card_details .wpcf7-not-valid-tip').html() == '') {
@@ -79,12 +113,37 @@
                     //displayError.textContent = '';
                     $('.credit_card_details .wpcf7-not-valid-tip').hide();
                 }
+
+				if (event.complete) {
+					setCookie("wp-sfrom", 1, 1);
+					var flag = 'valid';
+					$('form.wpcf7-form input').each( function(i) {
+						if ( $(this).hasClass('wpcf7-validates-as-required') && $(this).val() == '') {
+							flag = 'invalid';
+							jQuery('.wpcf7-submit').prop("disabled",true);
+						}
+
+					});
+					if( flag == 'invalid' ) {
+						$('.wpcf7-submit').prop("disabled",true);
+					} else {
+						$('.wpcf7-submit').prop("disabled",false);
+					}
+                }
             });
         }
 
-
         $form.submit(function(event) {
+
+			if( getCookie("wp-sfrom")!=1 ) {
+				return false;
+			}
+
             $('.ajax-loader').css("visibility", "visible");
+			$('.ajax-loader', $form).addClass('is-active');
+			$('.wpcf7-form').addClass('submitting');
+			$('.wpcf7-spinner').show();
+
             if ($('.wpcf7-response-output').html() == '') {
                 $('.wpcf7-response-output').hide();
             } else {
@@ -97,6 +156,10 @@
             }
 
             if (typeof window.FormData === 'function') {
+				$('.ajax-loader').css("visibility", "visible");
+				$('.ajax-loader', $form).addClass('is-active');
+				$('.wpcf7-spinner').show();
+				$('.wpcf7-form').addClass('submitting');
 
                 $('input[name="stripeToken"]', form).attr('value', '');
 
@@ -105,10 +168,12 @@
                 if (cf7sa_object.cf7sa_stripe.hasOwnProperty(form_id)) {
 
                     stripe.createToken(card).then(function(result) {
+						$('.wpcf7-form').addClass('submitting');
+						$('.ajax-loader').css("visibility", "visible");
+						$('.ajax-loader', $form).addClass('is-active');
+
                         if (result.error) {
                             // Inform the user if there was an error
-                            //var errorElement = document.getElementById('card-errors-' + form_id);
-                            //errorElement.textContent = result.error.message;
                             if ($('.credit_card_details .wpcf7-not-valid-tip').html() == '') {
                                 $('.credit_card_details').append('<span id="card-errors-' + form_id + '" class="wpcf7-not-valid-tip">' + result.error.message + '</span>');
                             } else {
@@ -123,15 +188,16 @@
                             } else {
                                 $('.wpcf7-response-output').show();
                             }
-                            //wpcf7_cf7sa.stripeTokenHandler(result.token.id, $form);
                             $('input[name="stripeToken"]', $form).val(result.token.id);
-
                             wpcf7_cf7sa.submit($form);
                         }
+
                     });
 
                 }
-                $('.ajax-loader').css("visibility", "hidden");
+				$('.wpcf7-form').addClass('submitting');
+				$('.ajax-loader').css("visibility", "visible");
+				$('.ajax-loader', $form).addClass('is-active');
                 event.preventDefault();
             }
         });
@@ -139,13 +205,6 @@
         if ($($form).find('.ajax-loader').length < 1) {
             $('.wpcf7-submit', $form).after('<span class="ajax-loader"></span>');
         }
-
-
-        wpcf7_cf7sa.toggleSubmit($form);
-
-        $form.on('click', '.wpcf7-acceptance', function() {
-            wpcf7_cf7sa.toggleSubmit($form);
-        });
 
         // Exclusive Checkbox
         $('.wpcf7-exclusive-checkbox', $form).on('click', 'input:checkbox', function() {
@@ -247,7 +306,6 @@
 
             $(':input[name="' + name + '"]', $form).each(function() {
                 updateCount(this);
-
                 $(this).keyup(function() {
                     updateCount(this);
                 });
@@ -272,6 +330,10 @@
     wpcf7_cf7sa.submit = function(form, stripe, elements, card) {
 
         $('.ajax-loader').css("visibility", "visible");
+		$('.ajax-loader', $form).addClass('is-active');
+		$('.wpcf7-spinner').show();
+		$('.wpcf7-form').addClass('submitting');
+
         if ($('.wpcf7-response-output').html() == '') {
             $('.wpcf7-response-output').hide();
         } else {
@@ -283,9 +345,6 @@
         }
 
         var $form = $(form);
-
-        $('.ajax-loader', $form).addClass('is-active');
-
         wpcf7_cf7sa.clearResponse($form);
 
         var formData = new FormData($form.get(0));
@@ -320,10 +379,7 @@
                 detail.inputs.push(field);
             }
         });
-
         wpcf7_cf7sa.triggerEvent($form.closest('div.wpcf7'), 'beforesubmit', detail);
-
-
 
         var ajaxSuccess = function(data, status, xhr, $form) {
             detail.id = $(data.into).attr('id');
@@ -331,6 +387,7 @@
             detail.apiResponse = data;
 
             var $message = $('.wpcf7-response-output', $form);
+			$('.wpcf7-submit').prop("disabled",true);
 
             switch (data.status) {
                 case 'validation_failed':
@@ -343,53 +400,46 @@
                     });
 
                     $message.addClass('wpcf7-validation-errors');
-                    $form.addClass('invalid');
-
+                    $form.addClass('invalid submitting');
                     wpcf7_cf7sa.triggerEvent(data.into, 'invalid', detail);
-                    $('.ajax-loader').css("visibility", "hidden");
                     break;
                 case 'acceptance_missing':
                     $message.addClass('wpcf7-acceptance-missing');
                     $form.addClass('unaccepted');
 
                     wpcf7_cf7sa.triggerEvent(data.into, 'unaccepted', detail);
-                    $('.ajax-loader').css("visibility", "hidden");
                     break;
                 case 'spam':
                     $message.addClass('wpcf7-spam-blocked');
                     $form.addClass('spam');
 
                     wpcf7_cf7sa.triggerEvent(data.into, 'spam', detail);
-                    $('.ajax-loader').css("visibility", "hidden");
                     break;
                 case 'aborted':
                     $message.addClass('wpcf7-aborted');
                     $form.addClass('aborted');
-
                     wpcf7_cf7sa.triggerEvent(data.into, 'aborted', detail);
-                    $('.ajax-loader').css("visibility", "hidden");
                     break;
                 case 'mail_sent':
                     $message.addClass('wpcf7-mail-sent-ok');
                     $form.addClass('sent');
-
+                    $('.wpcf7-form').removeClass('submitting');
+                    $('.wpcf7-form').removeClass('invalid');
+					setCookie("wp-sfrom", 0, 1);
                     wpcf7_cf7sa.triggerEvent(data.into, 'mailsent', detail);
-                    $('.ajax-loader').css("visibility", "hidden");
                     break;
                 case 'mail_failed':
                     $message.addClass('wpcf7-mail-sent-ng');
                     $form.addClass('failed');
-
                     wpcf7_cf7sa.triggerEvent(data.into, 'mailfailed', detail);
-                    $('.ajax-loader').css("visibility", "hidden");
                     break;
                 default:
                     var customStatusClass = 'custom-' +
-                        data.status.replace(/[^0-9a-z]+/i, '-');
+                    data.status.replace(/[^0-9a-z]+/i, '-');
                     $message.addClass('wpcf7-' + customStatusClass);
                     $form.addClass(customStatusClass);
             }
-            $('.ajax-loader').css("visibility", "hidden");
+
             if ($('.wpcf7-response-output').html() == '') {
                 $('.wpcf7-response-output').hide();
             } else {
@@ -415,6 +465,7 @@
             }
 
             $message.html('').append(data.message).slideDown('fast');
+			$('.wpcf7-form').removeClass('submitting');
             $message.attr('role', 'alert');
 
             $('.screen-reader-response', $form.closest('.wpcf7')).each(function() {
@@ -528,8 +579,8 @@
     };
 
     wpcf7_cf7sa.refill = function(form, data) {
-        var $form = $(form);
 
+        var $form = $(form);
         var refillCaptcha = function($form, items) {
             $.each(items, function(i, n) {
                 $form.find(':input[name="' + i + '"]').val('');
@@ -553,7 +604,6 @@
                 url: cf7sa_object.home_url + "/wp-json/contact-form-7/v1/contact-forms/" + wpcf7_cf7sa.getId($form) + "/refill",
                 beforeSend: function(xhr) {
                     var nonce = $form.find(':input[name="_wpnonce"]').val();
-
                     if (nonce) {
                         xhr.setRequestHeader('X-WP-Nonce', nonce);
                     }
@@ -584,25 +634,11 @@
         var $form = $(form);
         $form.removeClass('invalid spam sent failed');
         $form.siblings('.screen-reader-response').html('').attr('role', '');
-
         $('.wpcf7-not-valid-tip', $form).remove();
         $('[aria-invalid]', $form).attr('aria-invalid', 'false');
         $('.wpcf7-form-control', $form).removeClass('wpcf7-not-valid');
-
-        $('.wpcf7-response-output', $form)
-            .hide().empty().removeAttr('role')
-            .removeClass('wpcf7-mail-sent-ok wpcf7-mail-sent-ng wpcf7-validation-errors wpcf7-spam-blocked');
+        $('.wpcf7-response-output', $form).hide().empty().removeAttr('role').removeClass('wpcf7-mail-sent-ok wpcf7-mail-sent-ng wpcf7-validation-errors wpcf7-spam-blocked');
     };
-
-    /*wpcf7_cf7sa.apiSettings.getRoute = function(path) {
-        var url = wpcf7_cf7sa.apiSettings.root;
-
-        url = url.replace(
-            wpcf7_cf7sa.apiSettings.namespace,
-            wpcf7_cf7sa.apiSettings.namespace + path);
-
-        return url;
-    };*/
 
     wpcf7_cf7sa.stripeTokenHandler = function(token, form) {
         $('input[name="stripeToken"]', form).val(token);
@@ -620,12 +656,10 @@
     function CustomEvent(event, params) {
         params = params || { bubbles: false, cancelable: false, detail: undefined };
         var evt = document.createEvent('CustomEvent');
-        evt.initCustomEvent(event,
-            params.bubbles, params.cancelable, params.detail);
+        evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
         return evt;
     }
 
     CustomEvent.prototype = window.Event.prototype;
-
     window.CustomEvent = CustomEvent;
 })();

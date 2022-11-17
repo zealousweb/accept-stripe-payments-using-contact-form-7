@@ -4,13 +4,13 @@ Contributors: zealopensource
 Tags: Contact Form 7, form, forms, contactform7, contact form, Stripe submit, Contact Forms 7, Contact Form 7 + Stripe,Contact Forms, contacted, contacts, Additional Settings, Stripe button, integrate Stripe button, Stripe donation, online payment, integrate Stripe with contact form 7, contact form 7 Stripe
 Donate link: http://www.zealousweb.net/payment/
 Requires at least: 4.9
-Tested up to: 5.7
+Tested up to: 6.1.1
 Requires PHP: 5.6
 License: GPLv3 or later License
-CF7 requires at least: 3.0
-CF7 tested up to: 5.4
+CF7 requires at least: 5.0
+CF7 tested up to: 5.6.4
 Stable tag: 1.2
-Version: 1.2
+Version: 1.3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Contact Form 7 - Integrate Stripe payment gateway for making your payments through Contact Form 7. 
@@ -44,7 +44,7 @@ Check out the <strong>[Pro plugin documentation link](https://www.zealousweb.com
 
 == Plugin Requirement ==
 
-PHP version : 5.4 and latest
+PHP version : 5.6 and latest
 WordPress   : WordPress 3.0 and latest
 
 = Getting Help With Wordpress =
@@ -101,6 +101,9 @@ Yes, you can show transaction details on the page using shortcode -[stripe-detai
 
 = 1.2 =
 * Fix minor bugs and improve functionality
+
+= 1.3 =
+* Inprove validation script.
 
 == Upgrade Notice ==
 

@@ -302,7 +302,7 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 
 				case 'transaction_status' :
 					if( $data_ct ){
-							echo "<a href='".CFSAZW_PRODUCT."' target='_blank'>To unlock more features consider upgrading to PRO.</a>";
+							echo "<a href='".CFSAZW_PRODUCT."' target='_blank'>".__("To unlock more features consider upgrading to PRO.","contact-form-7-stripe-addon" )."</a>";
 					}else{
 						echo (
 							!empty( get_post_meta( $post_id , '_transaction_status', true ) )
@@ -314,7 +314,7 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 
 				case 'total' :
 					if( $data_ct ){
-							echo "<a href='".CFSAZW_PRODUCT."' target='_blank'>To unlock more features consider upgrading to PRO.</a>";
+							echo "<a href='".CFSAZW_PRODUCT."' target='_blank'>". __('To unlock more features consider upgrading to PRO.','contact-form-7-stripe-addon' )."</a>";
 					}else{
 
 						echo ( !empty( get_post_meta( $post_id , '_total', true ) ) ? get_post_meta( $post_id , '_total', true ) : '' ) .' ' .
@@ -397,7 +397,7 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 			}
 			echo '</select>';
 
-			echo '<input type="submit" id="doaction2" name="export_csv" class="button action" value="Export CSV">';
+			echo '<input type="submit" id="doaction2" name="export_csv" class="button action" value="' . __( 'Export CSV', 'contact-form-7-stripe-addon' ) . '">';
 
 		}
 
