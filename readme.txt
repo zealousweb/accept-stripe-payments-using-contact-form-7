@@ -13,7 +13,7 @@ Stable tag: 1.2
 Version: 1.3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Contact Form 7 - Integrate Stripe payment gateway for making your payments through Contact Form 7. 
+Contact Form 7 - Integrate Stripe payment gateway for making your payments through Contact Form 7.
 
 == Description ==
 
@@ -42,6 +42,16 @@ With the help of Accept Stripe Payments Using Contact Form 7, users can receive 
 
 Check out the <strong>[Pro plugin documentation link](https://www.zealousweb.com/documentation/contact-form-7-stripe-addon/)</strong>!here.
 
+* <strong>[Accept PayPal Payments Using Contact Form 7 Pro](https://www.zealousweb.com/store/accept-paypal-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept Stripe Payments Using Contact Form 7 Pro](https://www.zealousweb.com/store/accept-stripe-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept Authorize.NET Payments Using Contact Form 7 Pro](https://www.zealousweb.com/store/accept-authorize-net-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept Elavon Payments Using Contact Form 7 Pro](https://www.zealousweb.com/store/accept-elavon-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept 2Checkout Payments Using Contact Form 7 Pro](https://www.zealousweb.com/store/accept-2checkout-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept SagePay(opayo) Payments Using Contact Form 7 Pro](https://www.zealousweb.com/store/accept-sage-pay-payments-using-contact-form-7-pro)</strong>
+* <strong>[User Registration Using Contact Form 7 Pro](https://www.zealousweb.com/store/user-registration-using-contact-form-7-pro)</strong>
+* <strong>[Abandoned Contact Form 7 Pro](https://www.zealousweb.com/store/abandoned-contact-form-7-pro/)</strong>
+* <strong>[Custom Product Options WooCommerce Pro](https://www.zealousweb.com/store/custom-product-options-woocommerce-pro)</strong>
+
 == Plugin Requirement ==
 
 PHP version : 5.6 and latest
@@ -68,8 +78,8 @@ Installing the plugin is easy. Just follow these steps:
 4. Follow the on-screen instructions and wait till the upload completes.
 5. When it's finished, activate the plugin via the prompt. A message will display confirming activation was successful.
 
-That's it! Just configure your settings as you see fit, and you're on your way to creating forms with Stripe in your style. 
-Are you facing problems while installation? Need help getting things started? 
+That's it! Just configure your settings as you see fit, and you're on your way to creating forms with Stripe in your style.
+Are you facing problems while installation? Need help getting things started?
 
 == Frequently Asked Questions ==
 
