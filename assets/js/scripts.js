@@ -25,7 +25,7 @@ function getCookie(cname) {
 
     'use strict';
 
-	$("form :input").change(function() {
+	$("form.cf7sa :input").change(function() {
 		var flag = 'valid';
 		$('form.wpcf7-form input').each( function(i) {
 			if ( $(this).hasClass('wpcf7-validates-as-required') && $(this).val() == '') {
@@ -79,7 +79,7 @@ function getCookie(cname) {
     };
 
     wpcf7_cf7sa.initForm = function(form) {
-		$('.wpcf7-submit').prop("disabled",true);
+		$('form.cf7sa .wpcf7-submit').prop("disabled",true);
         var $form = $(form);
         var form_id = wpcf7_cf7sa.getId($form);
         var stripe;
@@ -100,6 +100,7 @@ function getCookie(cname) {
             // Handle real-time validation errors from the card Element.
             card.addEventListener('change', function(event) {
 				setCookie("wp-sfrom", 0, 1);
+				$('.wpcf7-not-valid-tip').remove();
 				$('.wpcf7-submit').prop("disabled",true);
                 if (event.error) {
                     //displayError.textContent = event.error.message;
