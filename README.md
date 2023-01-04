@@ -18,9 +18,7 @@ With the help of Accept Stripe Payments Using Contact Form 7, users can receive 
 - You can set ‘Success Return URL’ and ‘Cancel Return URL’ pages to redirect after the payment transaction.
 - Get more information of Pro version here
 
-# Check out the Pro plugin documentation link!here.
-
-PLUGIN REQUIREMENT
+# PLUGIN REQUIREMENT
 PHP version : 5.4 and latest
 WordPress : WordPress 3.0 and latest
 
