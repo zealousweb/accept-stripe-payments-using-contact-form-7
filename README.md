@@ -1,7 +1,7 @@
 # accept-stripe-payments-using-contact-form-7-
 With the help of Accept Stripe Payments Using Contact Form 7, users can receive Credit Card Payments directly from Customers. The Plugin is potentially useful in receiving payments safely from any Contact Form 7 form, which is hosted on any page or post for that matter.
 
-# FEATURES OF ACCEPT STRIPE PAYMENTS USING CONTACT FORM 7
+**FEATURES OF ACCEPT STRIPE PAYMENTS USING CONTACT FORM 7**
 - Receive payments in 25 different currencies.
 - Create multiple payment forms using Contact Form 7.
 - Permits to take values from all input fields including drop-down menu, textbox, hidden field, radio buttons, etc.
@@ -18,11 +18,11 @@ With the help of Accept Stripe Payments Using Contact Form 7, users can receive 
 - You can set ‘Success Return URL’ and ‘Cancel Return URL’ pages to redirect after the payment transaction.
 - Get more information of Pro version here
 
-# PLUGIN REQUIREMENT
+**PLUGIN REQUIREMENT**
 PHP version : 5.4 and latest
 WordPress : WordPress 3.0 and latest
 
-# Installation
+**Installation**
 Installing the plugin is easy. Just follow these steps:
 
 - From the dashboard of your site, navigate to Plugins –> Add New.
