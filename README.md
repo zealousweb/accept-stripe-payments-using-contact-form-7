@@ -1,4 +1,4 @@
-# accept-stripe-payments-using-contact-form-7-
+# Accept Stripe Payments Using Contact Form 7
 With the help of Accept Stripe Payments Using Contact Form 7, users can receive Credit Card Payments directly from Customers. The Plugin is potentially useful in receiving payments safely from any Contact Form 7 form, which is hosted on any page or post for that matter.
 
 **FEATURES OF ACCEPT STRIPE PAYMENTS USING CONTACT FORM 7**
@@ -93,9 +93,29 @@ You can enter the URL of the page to redirect for a Successful Stripe Payment tr
 You can enter the URL of the page to redirect if a transaction fails.
 
 - **Customer Details**
-- - **1. First Name**
+- **1. First Name**
 You have to select a name attribute for the first name field of contact form 7.
 
+- **2. Last Name**
+You have to select a name attribute for the last name field of contact form 7.
+
+- **3. Company Name**
+You have to select a name attribute for the company name field of contact form 7.
+
+- **4. Address**
+You have to select a tag name for the address field of contact form 7.
+
+- **5. City**
+You have to select a tag name for the city name field of contact form 7.
+
+- **6. State**
+You have to select a tag name for the state name field of contact form 7.
+
+- **7. Zip Code**
+You have to select a tag name for the zip code field of contact form 7.
+
+- **7. Country**
+You have to select a tag name for the country field of contact form 7.
 
 # Getting Help
 
