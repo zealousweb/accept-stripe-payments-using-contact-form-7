@@ -30,3 +30,30 @@ Installing the plugin is easy. Just follow these steps:
 -  When the popup appears, select the contact-form-7-stripe-addon.zip file from your desktop.
 - Follow the on-screen instructions and wait till the upload completes.
 - When it’s finished, activate the plugin via the prompt. A message will display confirming activation was successful.
+
+# How To Use
+You have to configure it from wp-admin > Contact > Add/Edit Contact Forms (Contact Form 7 needs to be activated before) to use this plugin.
+
+You will find a new tab “Stripe” along with Form, Mail, Messages, and Additional Settings, where you can make all settings related to Stripe Extension.
+
+To add a Stripe payment form to your Contact Form 7, find the setting attributes given below:
+
+- **Enable Stripe Payment Form**
+ Check the Stripe Payment Form option for Stripe submit button activation.
+ 
+ - **Enable Debug Mode**
+ Check the Enable Debug Mode option to start transaction debugging.
+ 
+  - **Enable Test API Mode**
+ This option will allow you to set the Stripe payment process in test mode.
+ 
+   - **Test Publishable Key (required)**
+ This field is required when you have set Stripe mode for testing if your site is in test mode.
+Get Your Publishable Key:
+Get it from [Stripe](https://dashboard.stripe.com/login) then Developers > API Keys page in your Stripe account.
+
+
+
+# Getting Help
+
+If you have any difficulties while using this Plugin, please feel free to contact us at opensource@zealousweb.com. We also offer custom WordPress extension development and WordPress theme design services to fulfill your e-commerce objectives. Our professional dy‐ namic WordPress experts provide profound and customer-oriented development of your project within short timeframes. Thank you for choosing a Plugin developed by ZealousWeb!
