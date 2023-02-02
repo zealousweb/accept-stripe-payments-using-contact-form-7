@@ -36,6 +36,8 @@ You have to configure it from wp-admin > Contact > Add/Edit Contact Forms (Conta
 
 You will find a new tab “Stripe” along with Form, Mail, Messages, and Additional Settings, where you can make all settings related to Stripe Extension.
 
+![Screenshot](resources/img/image-1.png)
+
 To add a Stripe payment form to your Contact Form 7, find the setting attributes given below:
 
 - **Enable Stripe Payment Form**
@@ -114,7 +116,7 @@ You have to select a tag name for the state name field of contact form 7.
 - **7. Zip Code**
 You have to select a tag name for the zip code field of contact form 7.
 
-- **7. Country**
+- **8. Country**
 You have to select a tag name for the country field of contact form 7.
 
 # Getting Help
