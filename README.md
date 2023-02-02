@@ -52,6 +52,49 @@ To add a Stripe payment form to your Contact Form 7, find the setting attributes
 Get Your Publishable Key:
 Get it from [Stripe](https://dashboard.stripe.com/login) then Developers > API Keys page in your Stripe account.
 
+- **Test Secret Key (required)**
+This field is required when you have set Stripe mode for testing if your site is in test mode.
+Get Your Secret Key:
+Get it from [Stripe](https://dashboard.stripe.com/login) then Developers > API Keys page in your Stripe account.
+
+- **Live Publishable Key (required)**
+This field is required to set Stripe mode to live if your site is in live mode.
+Get Your Publishable Key:
+Get it from [Stripe](https://dashboard.stripe.com/login) then Developers > API Keys page in your Stripe account.
+
+- **Live Secret Key (required)**
+This field is required to set Stripe mode to live if your site is in live mode.
+Get Your Secret Key:
+Get it from [Stripe](https://dashboard.stripe.com/login) then Developers > API Keys page in your Stripe account.
+
+- **Amount Field Name (required)**
+You have to set a name attribute to any of your fields of Contact Form 7 like drop-down menu, textbox, hidden field, radio buttons, etc., from which you need to pass amount value to Stripe website.
+
+For example, hidden price "20" This is a hidden field with the name “price”. You will need to set “price” in this Amount Field Name of Stripe tab.
+
+- **Quantity Field Name (optional)**
+You have to set a name attribute to any of your fields of Contact Form 7 like drop-down menu, textbox, hidden field, radio buttons, etc. from which you need to pass the quantity of the item to the Stripe website.
+
+For example, radio quantity "1" "2" "3" This is a radio button field with the name “quantity”. You will need to set “quantity” in this Quantity Field Name of Stripe tab.
+
+- **Customer Email Field Name (optional)**
+You have to set a name attribute for the text field of contact form 7 from which you need to pass the custom email of the customer to the Stripe website.
+
+- **Description Field Name (optional)**
+You have to set a name attribute for the text field of Contact Form 7 from which you need to pass the description of the item to the Stripe website.
+
+- **Select Currency**
+You can select your currency of Stripe here. There are 25 currencies supported in this plugin, and the default is set as AUD (Australian Dollar).
+
+- **Success Return URL (optional)**
+You can enter the URL of the page to redirect for a Successful Stripe Payment transaction.
+
+- **Cancel Return URL (optional)**
+You can enter the URL of the page to redirect if a transaction fails.
+
+- **Customer Details**
+- - **1. First Name**
+You have to select a name attribute for the first name field of contact form 7.
 
 
 # Getting Help
