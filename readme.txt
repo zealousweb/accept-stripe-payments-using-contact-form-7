@@ -4,13 +4,13 @@ Contributors: zealopensource
 Tags: Contact Form 7, form, forms, contactform7, contact form, Stripe submit, Contact Forms 7, Contact Form 7 + Stripe,Contact Forms, contacted, contacts, Additional Settings, Stripe button, integrate Stripe button, Stripe donation, online payment, integrate Stripe with contact form 7, contact form 7 Stripe
 Donate link: http://www.zealousweb.net/payment/
 Requires at least: 4.9
-Tested up to: 5.7
+Tested up to: 6.0.1
 Requires PHP: 5.6
 License: GPLv3 or later License
 CF7 requires at least: 3.0
-CF7 tested up to: 5.4
-Stable tag: 1.2
-Version: 1.2
+CF7 tested up to: 5.6
+Stable tag: 1.8
+Version: 1.8
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Contact Form 7 - Integrate Stripe payment gateway for making your payments through Contact Form 7. 
@@ -23,7 +23,7 @@ With the help of Accept Stripe Payments Using Contact Form 7, users can receive 
 
 = Features of Accept Stripe Payments Using Contact Form 7 =
 
-* Receive payments in 25 different currencies.
+* Receive payments in 25 different currencies. 
 * Create multiple payment forms using Contact Form 7.
 * Permits to take values from all input fields including drop-down menu, textbox, hidden field, radio buttons, etc.
 * Accepts dynamic value from front-end parameters like item description, amount, email, quantity, and customer details.
@@ -38,9 +38,9 @@ With the help of Accept Stripe Payments Using Contact Form 7, users can receive 
 * Stripe payment tag added to email content will display stripe payment response in email.
 * You can set ‘Success Return URL’ and ‘Cancel Return URL’ pages to redirect after the payment transaction.
 
-<strong>[Get more information of Pro version here](https://www.zealousweb.com/wordpress-plugins/accept-stripe-payments-using-contact-form-7/)</strong>
+<strong>[Get more information of Pro version here](https://www.zealousweb.com/store/accept-stripe-payments-using-contact-form-7-pro)</strong>
 
-Check out the <strong>[Pro plugin documentation link](https://www.zealousweb.com/documentation/contact-form-7-stripe-addon/)</strong>!here.
+Check out the <strong>[Pro plugin documentation link](https://www.zealousweb.com/documentation/wordpress-plugins/accept-stripe-payments-using-contact-form7/)</strong>!here.
 
 == Plugin Requirement ==
 
@@ -73,6 +73,13 @@ Are you facing problems while installation? Need help getting things started?
 
 == Frequently Asked Questions ==
 
+= How to get label and value separately in mail for dropdown field? =
+
+For dropdown field while using value and label separately example:
+[select menu-696 "t1|20" "t2|30" "t3|40" "t4|50" "t5|60"],
+To get the value after pipe character, put the usual mail-tag corresponding to the form-tag ([menu-696] in the mail templates. 
+To get value before pipe, you can use [_raw_{field name}] Example[_raw_menu-696].
+
 = Can I set Test mode for Stripe for testing? =
 
 Yes, You can set Test mode from admin for testing with Test API, and after the success, you can use your stripe payment with Live Mode.
@@ -92,20 +99,38 @@ Yes, you can show transaction details on the page using shortcode -[stripe-detai
 
 == Changelog ==
 
-= 1.0 =
-* Initial Release
+= 1.8 =
+* Fixed fatal error of API Requestor library.
+
+= 1.7 =
+* Updated API requestor library.
+
+= 1.6 =
+* Fixed contact form 7 Form setting for saving sandbox value for stripe.
+
+= 1.5 =
+* Updated the Stripe Library : Made use of the Payment Intents API that can handle complex payment flows.
+
+= 1.4 =
+* Fix : solved issue of showing Message on Submit
+
+= 1.3 =
+* Fix : Testing with lates CF7 5.6 and WP 6.0.1 and fix issues.
+
+= 1.2 =
+* Fix minor bugs and improve functionality
 
 = 1.1 =
 * Compatibility with latest cf7 version
 * Fix minor bugs and improve functionality
 
-= 1.2 =
-* Fix minor bugs and improve functionality
+= 1.0 =
+* Initial Release
 
 == Upgrade Notice ==
 
-= 1.0 =
-1.0 is Initial Release.
-
 = 1.1 =
 1.0 Compatibility with latest cf7 version.
+
+= 1.0 =
+1.0 is Initial Release.
