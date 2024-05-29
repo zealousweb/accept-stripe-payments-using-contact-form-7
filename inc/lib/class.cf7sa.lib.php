@@ -6,7 +6,7 @@
  *
  * @package WordPress
  * @subpackage Contact Form 7 - Stripe Add-on
- * @since 1.0
+ * @since 1.2
  */
 
 // Exit if accessed directly
@@ -41,14 +41,12 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		function __construct() {
 			add_action( 'init', array( $this, 'action__init' ) );
 			add_action( 'wpcf7_init', array( $this, 'action__wpcf7_init' ), 10, 0 );
-			add_action( 'wpcf7_init', array( $this, 'action__wpcf7_verify_version' ), 10, 0 );
 			add_action( 'wpcf7_save_contact_form', array( $this, 'action__wpcf7_save_contact_form' ), 999, 3 );
-
 			add_action( 'wpcf7_before_send_mail', array( $this, 'action__wpcf7_before_send_mail' ), 20, 3 );
-
 			add_shortcode( 'stripe-details', array( $this, 'shortcode__stripe_details' ) );
-
-			// add_filter( 'wpcf7_ajax_json_echo', array( $this, 'filter__wpcf7_ajax_json_echo' ), 20, 2 );
+			add_filter( 'wpcf7_ajax_json_echo', array( $this, 'filter__wpcf7_ajax_json_echo' ), 20, 2 );
+			add_action( 'wp_ajax_get_stripe_intent', array( $this, 'action__get_stripe_intent' ) );
+			add_action( 'wp_ajax_nopriv_get_stripe_intent', array( $this, 'action__get_stripe_intent' ) );
 
 		}
 
@@ -72,10 +70,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		 */
 		function action__init() {
 
-			if (
-				!isset( $_SESSION )
-				|| session_status() == PHP_SESSION_NONE
-			) {
+			if ( !isset( $_SESSION ) || session_status() == PHP_SESSION_NONE ) {
 				session_start();
 			}
 		}
@@ -95,21 +90,222 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 			add_filter( 'wpcf7_validate_stripe*', array( $this, 'wpcf7_stripe_validation_filter' ), 10, 2 );
 		}
 
-		/**
-		 * Stripe Verify CF7 dependencies.
-		 *
-		 * @method action__wpcf7_verify_version
-		 *
-		 */
-		function action__wpcf7_verify_version(){
+		function action__get_stripe_intent(){
 
-			$cf7_verify = $this->wpcf7_version();
-			if ( version_compare($cf7_verify, '5.2') >= 0 ) {
-				add_filter( 'wpcf7_feedback_response',	array( $this, 'filter__wpcf7_ajax_json_echo' ), 20, 2 );
-			} else{
-				add_filter( 'wpcf7_ajax_json_echo',	array( $this, 'filter__wpcf7_ajax_json_echo' ), 20, 2 );
+			require_once( CF7SA_DIR . '/inc/lib/init.php' );
+
+			if ( $_POST ) {
+				// CF7 posted data
+				$posted_data = $_POST;
 			}
 
+			$form_ID = $_POST['_wpcf7'];
+
+			if ( !empty( $form_ID ) ) {
+
+					$form_instance = WPCF7_ContactForm::get_instance( $form_ID );
+					$wpcf7_submission = $_POST; // CF7 Submission Instance
+
+					$use_stripe = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'use_stripe', true );
+
+					if ( empty( $use_stripe ) )
+						return;
+
+					$enable_test_mode     = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'enable_test_mode', true );
+					$test_publishable_key = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'test_publishable_key', true );
+					$test_secret_key      = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'test_secret_key', true );
+					$live_publishable_key = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'live_publishable_key', true );
+					$live_secret_key      = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'live_secret_key', true );
+					$amount               = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'amount', true );
+					$quantity             = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'quantity', true );
+					$email                = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'email', true );
+					$description          = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'description', true );
+
+					//get Client Details
+					$first_name		= get_post_meta( $form_ID, CF7SA_META_PREFIX . 'first_name', true );
+					$last_name      = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'last_name', true );
+					$company_name   = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'company_name', true );
+					$address        = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'address', true );
+					$city           = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'city', true );
+					$state          = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'state', true );
+					$zip_code       = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'zip_code', true );
+					$country        = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'country', true );
+
+					// Set some example data for the payment.
+					$currency             = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'currency', true );
+					$customer_details     = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'customer_details', true );
+
+					$first_name  = ( ( !empty( $first_name ) && array_key_exists( $first_name, $posted_data ) ) ? $posted_data[$first_name] : '' );
+					$email       = ( ( !empty( $email ) && array_key_exists( $email, $posted_data ) ) ? $posted_data[$email] : '' );
+					$description = ( ( !empty( $description ) && array_key_exists( $description, $posted_data ) ) ? $posted_data[$description] : get_bloginfo( 'name' ) );
+					
+					if( isset( $posted_data[$amount.'_free_text'] ) ) {
+						$amount_val = $posted_data[$amount.'_free_text'];
+					} else {
+						$amount_val  = ( ( !empty( $amount ) && array_key_exists( $amount, $posted_data ) ) ? floatval( $posted_data[$amount] ) : '0' );
+						//Remove special Character from amount / price field
+						$amount_val = preg_replace('/[^a-zA-Z0-9_ %\[\]\.\(\)%&-]/s', '', $posted_data[$amount]);
+					}
+
+					$quanity_val = ( ( !empty( $quantity ) && array_key_exists( $quantity, $posted_data ) ) ? floatval( $posted_data[$quantity] ) : '' );
+
+					if (
+						!empty( $amount )
+						&& array_key_exists( $amount, $posted_data )
+						&& is_array( $posted_data[$amount] )
+						&& !empty( $posted_data[$amount] )
+					) {
+						$val = 0;
+						foreach ( $posted_data[$amount] as $k => $value ) {
+							$val = $val + floatval($value);
+						}
+						$amount_val = $val;
+					}
+
+					if (
+						!empty( $quantity )
+						&& array_key_exists( $quantity, $posted_data )
+						&& is_array( $posted_data[$quantity] )
+						&& !empty( $posted_data[$quantity] )
+					) {
+						$qty_val = 0;
+						foreach ( $posted_data[$quantity] as $k => $qty ) {
+							$qty_val = $qty_val + floatval($qty);
+						}
+						$quanity_val = $qty_val;
+					}
+
+					$amountPayable = (float) ( empty( $quanity_val ) ? $amount_val : ( $quanity_val * $amount_val ) );
+
+					if ( empty( $amountPayable ) ) {
+						add_filter( 'wpcf7_skip_mail', array( $this, 'filter__wpcf7_skip_mail' ), 20 );
+						$_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $form_ID ] = __( 'Empty Amount field or Invalid configuration.', CF7SA_PREFIX );
+						return;
+					}
+
+					if ( $amountPayable < 0 && $amountPayable != 0 )  {
+						add_filter( 'wpcf7_skip_mail', array( $this, 'filter__wpcf7_skip_mail' ), 20 );
+						$_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $form_ID ] = __( 'Please enter the valid amount.', CF7SA_PREFIX );
+						return;
+					}
+
+					$amountPayable = sprintf('%0.2f', $amountPayable) * 100;
+
+					$secret_key = ( !empty( $enable_test_mode ) ? $test_secret_key : $live_secret_key );
+
+					\Stripe\Stripe::setApiKey( $secret_key );
+
+					try {
+						// Use Stripe's library to make requests...
+						$clients = \Stripe\Customer::all([ 'limit' => 10000, 'email' => $email ]);
+
+						if ( !empty( $clients )	&& !empty( $clients->data ) ) {
+							$customer = $clients->data[0];
+						} else {
+
+							$customer = array(
+								'name' => $first_name,
+								'description' => $description,
+								'email' => $email,
+								'source' => $token,
+								"address" => [
+									"city" => $city,
+									"country" => $country,
+									"line1" => $address,
+									"line2" => "",
+									"postal_code" => $zip_code,
+									"state" => $state
+								]
+							);
+
+							$customer = apply_filters( CF7SA_PREFIX . '/stripe/customer', $customer );
+
+							// Create a Customer
+							$customer = \Stripe\Customer::create( $customer );
+
+						}
+
+						if( !empty( $description ) ) {
+							$posted_data['description'] = $description;
+						}
+
+						if( !empty( $customer_details ) ) {
+
+							$posted_data['metadata'] = array();
+
+							if (
+								!empty( $first_name )
+								and $first_name_data = ( ( !empty( $first_name ) && array_key_exists( $first_name, $posted_data ) ) ? $posted_data[$first_name] : '' )
+							)
+								$posted_data['metadata']['first_name'] = $first_name_data;
+
+							if (
+								!empty( $last_name )
+								and $last_name_data = ( ( !empty( $last_name ) && array_key_exists( $last_name, $posted_data ) ) ? $posted_data[$last_name] : '' )
+							)
+								$posted_data['metadata']['last_name'] = $last_name_data;
+
+							if (
+								!empty( $company_name )
+								and $company_name_data = ( ( !empty( $company_name ) && array_key_exists( $company_name, $posted_data ) ) ? $posted_data[$company_name] : '' )
+							)
+								$posted_data['metadata']['company_name'] = $company_name_data;
+
+							if (
+								!empty( $address )
+								and $address_data = ( ( !empty( $address ) && array_key_exists( $address, $posted_data ) ) ? $posted_data[$address] : '' )
+							)
+								$posted_data['metadata']['address'] = $address_data;
+
+							if (
+								!empty( $city )
+								and $city_data = ( ( !empty( $city ) && array_key_exists( $city, $posted_data ) ) ? $posted_data[$city] : '' )
+							)
+								$posted_data['metadata']['city'] = $city_data;
+
+							if (
+								!empty( $state )
+								and $state_data = ( ( !empty( $state ) && array_key_exists( $state, $posted_data ) ) ? $posted_data[$state] : '' )
+							)
+								$posted_data['metadata']['state'] = $state_data;
+
+							if (
+								!empty( $zip_code )
+								and $zip_code_data = ( ( !empty( $zip_code ) && array_key_exists( $zip_code, $posted_data ) ) ? $posted_data[$zip_code] : '' )
+							)
+								$posted_data['metadata']['zip_code'] = $zip_code_data;
+
+							if (
+								!empty( $country )
+								and $country_data = ( ( !empty( $country ) && array_key_exists( $country, $posted_data ) ) ? $posted_data[$country] : '' )
+							)
+								$posted_data['metadata']['country'] = $country_data;
+
+						}
+
+						$posted_data = apply_filters( CF7SA_PREFIX . '/stripe/change', $posted_data );
+
+						// Save the customer id in your own database!
+						$paymentIntent = \Stripe\PaymentIntent::create([
+							'payment_method_types' => ['card'],
+							'amount' => $amountPayable,
+							'description'=> $description,
+							'currency' => $currency,
+							'customer' => $customer->id,
+							'metadata' => isset($posted_data['metadata']) ? $posted_data['metadata'] : [],
+						]);
+
+						$client_secret = $paymentIntent->client_secret;
+
+					} catch ( Exception $e ) {
+						
+						//If the paymentIntent fails (payment unsuccessful), this code will get triggered.
+						$client_secret = "";
+					}
+			}
+
+			echo $client_secret;
+			die();
 		}
 
 		/**
@@ -122,6 +318,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		 * @param  object $contact_form WPCF7_Submission class
 		 *
 		 */
+
 		function action__wpcf7_before_send_mail( $contact_form, $abort, $wpcf7_submission ) {
 
 			$submission    = WPCF7_Submission::get_instance(); // CF7 Submission Instance
@@ -129,8 +326,12 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 			$form_instance = WPCF7_ContactForm::get_instance( $form_ID ); // CF7 From Instance
 
 			if ( $submission ) {
-				// CF7 posted data
-				$posted_data = $submission->get_posted_data();
+
+				if ( $_POST ) {
+					// CF7 posted data
+					$posted_data = $_POST;
+				}
+
 			}
 
 			if ( !empty( $form_ID ) ) {
@@ -156,13 +357,19 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				$currency             = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'currency', true );
 				$customer_details     = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'customer_details', true );
 
-				$exceed_ct		= sanitize_text_field( substr( get_option( '_exceed_cfsazw_l' ), 6 ) );
-
 				$email       = ( ( !empty( $email ) && array_key_exists( $email, $posted_data ) ) ? $posted_data[$email] : '' );
 				$description = ( ( !empty( $description ) && array_key_exists( $description, $posted_data ) ) ? $posted_data[$description] : get_bloginfo( 'name' ) );
 
+				if( isset($posted_data[$amount][0]) ) {
+					$posted_data[$amount][0] = str_replace("Other", "", $posted_data[$amount][0]);
+					$posted_data[$amount][0] = str_replace(" ", "", $posted_data[$amount][0]);
+				}
+
 				$amount_val  = ( ( !empty( $amount ) && array_key_exists( $amount, $posted_data ) ) ? floatval( $posted_data[$amount] ) : '0' );
+				//Remove special Character from amount / price field
+				$amount_val = preg_replace('/[^a-zA-Z0-9_ %\[\]\.\(\)%&-]/s', '', $posted_data[$amount]);
 				$quanity_val = ( ( !empty( $quantity ) && array_key_exists( $quantity, $posted_data ) ) ? floatval( $posted_data[$quantity] ) : '' );
+
 
 				if (
 					!empty( $amount )
@@ -210,14 +417,17 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				$amountPayable = sprintf('%0.2f', $amountPayable) * 100;
 
 
-				// Check whether stripe token is not empty
-				if (
-					array_key_exists( 'stripeToken', $posted_data )
-					&& !empty( $posted_data['stripeToken'] )
+				/**
+				 * Generate stripe token then only when
+				 * Check whether stripe token is not empty and 
+				 * Above validation msg is empty for cases like : On entering amount as zero first and then entering amount > 0 
+				 */
+				if ( empty($_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $form_ID ]) && array_key_exists( 'stripeClientSecret', $posted_data )
+					&& !empty( $posted_data['stripeClientSecret'] )
 				) {
 
 					// Retrieve stripe token, card and user info from the submitted form data
-					$token  = $posted_data['stripeToken'];
+					$token  = $posted_data['stripeClientSecret'];
 
 					$secret_key = ( !empty( $enable_test_mode ) ? $test_secret_key : $live_secret_key );
 
@@ -226,176 +436,22 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 						return;
 					}
 
-					$charge = $clients = new stdClass();
-
 					\Stripe\Stripe::setApiKey( $secret_key );
 
-					try {
-						// Use Stripe's library to make requests...
+					$PaymentIntent = \Stripe\PaymentIntent::retrieve($token);
 
-						$clients = \Stripe\Customer::all([ 'limit' => 10000, 'email' => $email ]);
-
-						if (
-							   !empty( $clients )
-							&& !empty( $clients->data )
-						) {
-							$customer = $clients->data[0];
-						}else {
-							$customer = array(
-								'email' => $email,
-								'source' => $token,
-							);
-
-							$customer = apply_filters( CF7SA_PREFIX . '/stripe/customer', $customer );
-
-							// Create a Customer
-							$customer = \Stripe\Customer::create( $customer );
-						}
-
-						$charge = array(
-							'amount' => $amountPayable,
-							'currency' => $currency,
-							'customer' => $customer->id
-						);
-
-						if( !empty( $description ) ) {
-							$charge['description'] = $description;
-						}
-
-						if( !empty( $customer_details ) ) {
-
-							$first_name              = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'first_name', true );
-							$last_name               = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'last_name', true );
-							$company_name            = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'company_name', true );
-							$address                 = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'address', true );
-							$city                    = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'city', true );
-							$state                   = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'state', true );
-							$zip_code                = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'zip_code', true );
-							$country                 = get_post_meta( $form_ID, CF7SA_META_PREFIX . 'country', true );
-
-							$charge['metadata'] = array();
-
-							if (
-								!empty( $first_name )
-								and $first_name_data = ( ( !empty( $first_name ) && array_key_exists( $first_name, $posted_data ) ) ? $posted_data[$first_name] : '' )
-							)
-								$charge['metadata']['first_name'] = $first_name_data;
-
-							if (
-								!empty( $last_name )
-								and $last_name_data = ( ( !empty( $last_name ) && array_key_exists( $last_name, $posted_data ) ) ? $posted_data[$last_name] : '' )
-							)
-								$charge['metadata']['last_name'] = $last_name_data;
-
-							if (
-								!empty( $company_name )
-								and $company_name_data = ( ( !empty( $company_name ) && array_key_exists( $company_name, $posted_data ) ) ? $posted_data[$company_name] : '' )
-							)
-								$charge['metadata']['company_name'] = $company_name_data;
-
-							if (
-								!empty( $address )
-								and $address_data = ( ( !empty( $address ) && array_key_exists( $address, $posted_data ) ) ? $posted_data[$address] : '' )
-							)
-								$charge['metadata']['address'] = $address_data;
-
-							if (
-								!empty( $city )
-								and $city_data = ( ( !empty( $city ) && array_key_exists( $city, $posted_data ) ) ? $posted_data[$city] : '' )
-							)
-								$charge['metadata']['city'] = $city_data;
-
-							if (
-								!empty( $state )
-								and $state_data = ( ( !empty( $state ) && array_key_exists( $state, $posted_data ) ) ? $posted_data[$state] : '' )
-							)
-								$charge['metadata']['state'] = $state_data;
-
-							if (
-								!empty( $zip_code )
-								and $zip_code_data = ( ( !empty( $zip_code ) && array_key_exists( $zip_code, $posted_data ) ) ? $posted_data[$zip_code] : '' )
-							)
-								$charge['metadata']['zip_code'] = $zip_code_data;
-
-							if (
-								!empty( $country )
-								and $country_data = ( ( !empty( $country ) && array_key_exists( $country, $posted_data ) ) ? $posted_data[$country] : '' )
-							)
-								$charge['metadata']['country'] = $country_data;
-
-						}
-
-						$charge = apply_filters( CF7SA_PREFIX . '/stripe/change', $charge );
-
-						// Save the customer id in your own database!
-						// Charge the Customer instead of the card
-						$charge = \Stripe\Charge::create( $charge );
-
-					} catch ( Exception $e ) {
-
-						//If the charge fails (payment unsuccessful), this code will get triggered.
-						if ( ! empty( $charge->failure_code ) ) {
-
-							$err_msg = $charge->failure_code . ": " . $charge->failure_message;
-
-							add_filter( 'wpcf7_skip_mail', array( $this, 'filter__wpcf7_skip_mail' ), 20 );
-							$wpcf7_submission->set_status( 'mail_failed' );
-							$wpcf7_submission->set_response( $contact_form->message( 'mail_sent_ng' ) );
-
-
-							if ( !empty( $cancel_returnURL ) && $cancel_returnURL != "Select page" ) {
-								$redirect_url = add_query_arg(
-									array(
-										'form'          => $form_ID,
-										'failure_code'  => $charge->failure_code,
-										'failure_message' =>  $charge->failure_message,
-									),
-									esc_url( get_permalink( $cancel_returnURL ) )
-								);
-
-								$_SESSION[ CF7SA_META_PREFIX . 'return_url' . $form_ID ] = esc_url( $redirect_url );
-
-								if ( !$submission->is_restful() ) {
-									wp_redirect( $redirect_url );
-									exit;
-								}
-
-							} else {
-
-								$_SESSION[ CF7SA_META_PREFIX . 'return_url' . $form_ID ] = "";
-
-							}
-
-						} else {
-							$err_msg = $e->getMessage();
-						}
-
-						add_filter( 'wpcf7_skip_mail', array( $this, 'filter__wpcf7_skip_mail' ), 20 );
-						$wpcf7_submission->set_status( 'mail_failed' );
-						$wpcf7_submission->set_response( $contact_form->message( 'mail_sent_ng' ) );
-
-						$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( $err_msg );
-						$_SESSION[ CF7SA_META_PREFIX . 'failed' . $form_ID ] = true;
-
-						return $submission;
-
-					}
-
-					$attachment = '';
+					$attachent = '';
 
 					if ( !empty( $submission->uploaded_files() ) ) {
-						$cf7_verify = $this->wpcf7_version();
-
-						if ( version_compare( $cf7_verify, '5.4' ) >= 0 ) {
-							$uploaded_files = $this->zw_cf7_upload_files( $submission->uploaded_files(), 'new' );
-						}else{
-							$uploaded_files = $this->zw_cf7_upload_files( array( $submission->uploaded_files() ), 'old' );
-						}
+						$uploaded_files = $this->zw_cf7_upload_files( $submission->uploaded_files() );
 
 						if ( !empty( $uploaded_files ) ) {
-							$attachment = serialize( str_replace('\\', '/', $uploaded_files ) );
+							$attachent = serialize( $uploaded_files );
 						}
 					}
+
+					$latest_charge = $PaymentIntent->latest_charge;
+					$charge = \Stripe\Charge::retrieve($latest_charge, []);
 
 					// Check whether the charge is successful
 					if (
@@ -413,7 +469,6 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 						$payment_status = $charge->status;
 
 
-
 						$sa_post_id = wp_insert_post( array (
 							'post_type' => 'cf7sa_data',
 							'post_title' => ( !empty( $email ) ? $email : $invoice_no ), // email/invoice_no
@@ -425,47 +480,39 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 						if ( !empty( $sa_post_id ) ) {
 
 							$stored_data = $posted_data;
-							unset( $stored_data['stripeToken'] );
+							unset( $stored_data['stripeClientSecret'] );
 
-							if(!get_option('_exceed_cfsazw')){
-								sanitize_text_field( add_option('_exceed_cfsazw', '1') );
-							}else{
-								$exceed_val = sanitize_text_field( get_option( '_exceed_cfsazw' ) ) + 1;
-								update_option( '_exceed_cfsazw', $exceed_val );								
-							}
-
-							if ( !empty( sanitize_text_field( get_option( '_exceed_cfsazw' ) ) ) && sanitize_text_field( get_option( '_exceed_cfsazw' ) ) > $exceed_ct ) {
-								$stored_data['_exceed_num_cfsazw'] = '1';
-							}
-
-							add_post_meta( $sa_post_id, '_form_id', sanitize_text_field($form_ID) );
-							add_post_meta( $sa_post_id, '_email', sanitize_email($email) );
-							add_post_meta( $sa_post_id, '_transaction_id', sanitize_text_field($txn_id) );
-							add_post_meta( $sa_post_id, '_invoice_no', sanitize_text_field($invoice_no) );
-							add_post_meta( $sa_post_id, '_amount', sanitize_text_field($amount_val) );
-							add_post_meta( $sa_post_id, '_quantity', sanitize_text_field($quanity_val) );
-							add_post_meta( $sa_post_id, '_total', sanitize_text_field(($paidAmount/100)) );
+							add_post_meta( $sa_post_id, '_form_id', $form_ID );
+							add_post_meta( $sa_post_id, '_email', $email );
+							add_post_meta( $sa_post_id, '_transaction_id', $txn_id );
+							add_post_meta( $sa_post_id, '_invoice_no', $invoice_no );
+							add_post_meta( $sa_post_id, '_amount', $amount_val );
+							add_post_meta( $sa_post_id, '_quantity', $quanity_val );
+							add_post_meta( $sa_post_id, '_total', ($paidAmount/100) );
 							add_post_meta( $sa_post_id, '_request_Ip', $this->getUserIpAddr() );
-							add_post_meta( $sa_post_id, '_currency', sanitize_text_field($paidCurrency) );
+							add_post_meta( $sa_post_id, '_currency', $paidCurrency );
 							add_post_meta( $sa_post_id, '_form_data', serialize( $stored_data ) );
 							add_post_meta( $sa_post_id, '_transaction_response', json_encode( $charge ) );
-							add_post_meta( $sa_post_id, '_transaction_status', sanitize_text_field($payment_status) );
-							add_post_meta( $sa_post_id, '_attachment', sanitize_text_field($attachment) );
+							add_post_meta( $sa_post_id, '_transaction_status', $payment_status );
+							add_post_meta( $sa_post_id, '_attachment', $attachent );
 						}
 
 						add_filter( 'wpcf7_mail_tag_replaced', function( $replaced, $submitted, $html, $mail_tag ) use ( $txn_id, $payment_status, $invoice_no ) {
 
-							if ( 'stripe' == $mail_tag->corresponding_form_tag()->basetype ) {
+							$corresponding_form_tag = $mail_tag->corresponding_form_tag();
+							if (is_object($corresponding_form_tag) && property_exists($corresponding_form_tag, 'basetype')) {
+								if ('stripe' == $corresponding_form_tag->basetype) {
 
-								$data = array();
-								$data[] = 'Transaction ID: ' . $txn_id;
-								$data[] = 'Transaction Status: ' . $payment_status;
-								$data[] = 'Invoice Number: ' . $invoice_no;
+									$data = array();
+									$data[] = 'Transaction ID: ' . $txn_id;
+									$data[] = 'Transaction Status: ' . $payment_status;
+									$data[] = 'Invoice Number: ' . $invoice_no;
 
-								if ( !empty( $html ) ) {
-									return implode( '<br/>', $data );
-								} else {
-									return implode( "\n", $data );
+									if ( !empty( $html ) ) {
+										return implode( '<br/>', $data );
+									} else {
+										return implode( "\n", $data );
+									}
 								}
 							}
 
@@ -478,7 +525,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 							   $payment_status == 'succeeded'
 							|| $payment_status == 'paid'
 						) {
-							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( __( 'Transaction is successfully completed.', CF7SA_PREFIX ) );
+							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( __( 'Transaction is Successfully Completed.', CF7SA_PREFIX ) );
 						} else if ( $payment_status == 'pending' ) {
 							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( __( 'Transaction is in pending.', CF7SA_PREFIX ) );
 						} else {
@@ -487,16 +534,16 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 							$wpcf7_submission->set_status( 'mail_failed' );
 							$wpcf7_submission->set_response( $contact_form->message( 'mail_sent_ng' ) );
 
-							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize(  __( 'Transaction is failed.', CF7SA_PREFIX ) );
+							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize(  __( 'Transaction is failed...', CF7SA_PREFIX ) );
 						}
 
 						if ( !empty( $success_returnURL ) && $success_returnURL != "Select page" ) {
 
 							$redirect_url = add_query_arg(
 								array(
-									'form'          => $form_ID,
-									'invoice'       => $invoice_no,
-									'txn_id' =>  $txn_id,
+									'form'      => $form_ID,
+									'invoice'   => $invoice_no,
+									'txn_id' 	=>  $txn_id,
 								),
 								esc_url( get_permalink( $success_returnURL ) )
 							);
@@ -518,7 +565,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 						$wpcf7_submission->set_status( 'mail_failed' );
 						$wpcf7_submission->set_response( $contact_form->message( 'mail_sent_ng' ) );
 
-						$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize(  __( 'Transaction is failed.', CF7SA_PREFIX ) );
+						$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize(  __( 'Transaction is failed..', CF7SA_PREFIX ) );
 						$_SESSION[ CF7SA_META_PREFIX . 'failed' . $form_ID ] = true;
 					}
 
@@ -527,7 +574,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 					$wpcf7_submission->set_status( 'mail_failed' );
 					$wpcf7_submission->set_response( $contact_form->message( 'mail_sent_ng' ) );
 
-					$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize(  __( 'Transaction is failed.', CF7SA_PREFIX ) );
+					$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize(  __( 'Transaction is failed. Please configure plugin properly as show in document.', CF7SA_PREFIX ) );
 					$_SESSION[ CF7SA_META_PREFIX . 'failed' . $form_ID ] = true;
 				}
 
@@ -603,18 +650,18 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				}
 
 			} catch( Exception $e ) {
-
+				//$message = $e->getMessage();
 			}
 		}
 
 
 		function shortcode__stripe_details() {
 
-			$form_id = (int)( isset( $_REQUEST['form'] ) ? sanitize_text_field($_REQUEST['form']) : '' );
-			$txn_id = ( isset( $_REQUEST['txn_id'] ) ? sanitize_text_field($_REQUEST['txn_id'] ) : '' );
-			$invoice_no = ( isset( $_REQUEST['invoice'] ) ? sanitize_text_field($_REQUEST['invoice']) : '' );
-			$failure_code = ( isset( $_REQUEST['failure_code'] ) ? sanitize_text_field($_REQUEST['failure_code']) : '' );
-			$failure_message = ( isset( $_REQUEST['failure_message'] ) ? sanitize_text_field($_REQUEST['failure_message']) : '' );
+			$form_id = (int)( isset( $_REQUEST['form'] ) ? $_REQUEST['form'] : '' );
+			$txn_id = ( isset( $_REQUEST['txn_id'] ) ? $_REQUEST['txn_id'] : '' );
+			$invoice_no = ( isset( $_REQUEST['invoice'] ) ? $_REQUEST['invoice'] : '' );
+			$failure_code = ( isset( $_REQUEST['failure_code'] ) ? $_REQUEST['failure_code'] : '' );
+			$failure_message = ( isset( $_REQUEST['failure_message'] ) ? $_REQUEST['failure_message'] : '' );
 
 			if (
 				!empty( $failure_code )
@@ -661,9 +708,11 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 			} catch ( Exception $e ) {
 				//If the charge fails (payment unsuccessful), this code will get triggered.
 				if ( ! empty( $retrieve_charge->failure_code ) ) {
+
 					return '<p style="color: #f00">' . $retrieve_charge->failure_code . ": " . $retrieve_charge->failure_message . '</p>';
 
 				} else {
+
 					return '<p style="color: #f00">' . $e->getMessage() . '</p>';
 				}
 			}
@@ -774,9 +823,9 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		 */
 		function wpcf7_stripe_validation_filter( $result, $tag ) {
 
-			$stripe = isset( $_POST[ 'stripeToken' ] ) ? sanitize_text_field($_POST[ 'stripeToken' ]) : '';
+			$stripe = isset( $_POST[ 'stripeClientSecret' ] ) ? $_POST[ 'stripeClientSecret' ] : '';
 
-			$id = isset( $_POST[ '_wpcf7' ] ) ? intval($_POST[ '_wpcf7' ]) : '';
+			$id = isset( $_POST[ '_wpcf7' ] ) ? $_POST[ '_wpcf7' ] : '';
 
 			if ( !empty( $id ) ) {
 				$id = ( int ) $_POST[ '_wpcf7' ];
@@ -910,11 +959,13 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 									sprintf(
 										'<span class="credit_card_details wpcf7-form-control-wrap %1$s">%2$s%3$s</span>',
 										sanitize_html_class( $tag->name ),
-										'<label for="card-element-' . esc_attr( $form_id ) . '">Credit or debit card</label>
+										'<label for="card-element-' . esc_attr( $form_id ) . '">' . __('Credit or Debit card', 'contact-form-7-stripe-addon').'</label>
 										<div id="card-element-' . esc_attr( $form_id ) . '">
 											<!-- a Stripe Element will be inserted here. -->
 										</div>' .
 										'<input type="hidden" name="stripeToken" value="" />' .
+										'<input type="hidden" name="stripeClientSecret" value="" />' .
+										'<input type="hidden" name="action" value="get_stripe_intent" />' .
 										'<noscript>' . __( 'Stripe Payments requires Javascript to be supported by the browser in order to operate.', 'contact-form-7-stripe-addon' ) . '</noscript>',
 										'<span id="card-errors-' . esc_attr( $form_id ) . '" class="wpcf7-not-valid-tip"></span>' .
 										$validation_error
@@ -949,18 +1000,18 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 			if ( !empty( $enable_test_mode ) ) {
 
 				if ( empty( $test_publishable_key ) )
-					return __( 'Please enter Test Publishable Key.', CF7SA_PREFIX );
+					return __( 'Please enter Test Publishable Key.', 'contact-form-7-stripe-addon' );
 
 				if ( empty( $test_secret_key ) )
-					return __( 'Please enter Test Secret Key.', CF7SA_PREFIX );
+					return __( 'Please enter Test Secret Key.', 'contact-form-7-stripe-addon' );
 
 			} else {
 
 				if ( empty( $live_publishable_key ) )
-					return __( 'Please enter Live Publishable Key.', CF7SA_PREFIX );
+					return __( 'Please enter Live Publishable Key.', 'contact-form-7-stripe-addon' );
 
 				if ( empty( $live_secret_key ) )
-					return __( 'Please enter Live Secret Key.', CF7SA_PREFIX );
+					return __( 'Please enter Live Secret Key.', 'contact-form-7-stripe-addon' );
 
 			}
 			return false;
@@ -1018,29 +1069,26 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		 *
 		 * @return array
 		 */
-		function zw_cf7_upload_files( $attachment, $version ) {
-			if( empty( $attachment ) )
-			return;
-		
+		function zw_cf7_upload_files( $attachment ) {
+			if ( empty( $attachment ) || $attachment === "" ) {
+				return;
+			}
 			$new_attachment = $attachment;
-		
 			foreach ( $attachment as $key => $value ) {
-				$tmp_name = $value;
-				$uploads_dir = wpcf7_maybe_add_random_dir( $this->zw_wpcf7_upload_tmp_dir() );
-				foreach ($tmp_name as $newkey => $file_path) {
-					$get_file_name = explode( '/', $file_path );
-					$new_uploaded_file = path_join( $uploads_dir, end( $get_file_name ) );
-					if ( copy( $file_path, $new_uploaded_file ) ) {
-						chmod( $new_uploaded_file, 0755 );
-						if($version == 'old'){
-							$new_attachment_file[$newkey] = $new_uploaded_file;
-						}else{
-							$new_attachment_file[$key] = $new_uploaded_file;
-						}
-					}		
+				// Check if $value is a non-empty string before proceeding
+				if ( is_string( $value ) && $value !== "" ) {
+					$tmp_name = $value;
+					$uploads_dir = wpcf7_maybe_add_random_dir( $this->zw_wpcf7_upload_tmp_dir() );
+					$new_file = path_join( $uploads_dir, end( explode( '/', $value ) ) );
+		
+					if ( copy( $value, $new_file ) ) {
+						chmod( $new_file, 0400 );
+						$new_attachment[$key] = $new_file;
+					}
 				}
 			}
-			return $new_attachment_file;
+		
+			return $new_attachment;
 		}
 
 		function handlePaymentIntentSucceeded( $paymentIntent ) {
@@ -1211,25 +1259,6 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 					update_post_meta( $data_id, '_transaction_response', json_encode( $paymentIntent ) );
 				}
 			}
-		}
-
-		/**
-		 * Get current conatct from 7 version.
-		 *
-		 * @method wpcf7_version
-		 *
-		 * @return string
-		 */
-		function wpcf7_version() {
-
-			$wpcf7_path = plugin_dir_path( CF7SA_DIR ) . 'contact-form-7/wp-contact-form-7.php';
-
-			if( ! function_exists('get_plugin_data') ){
-				require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-			}
-			$plugin_data = get_plugin_data( $wpcf7_path );
-
-			return $plugin_data['Version'];
 		}
 
 	}
