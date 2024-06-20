@@ -134,7 +134,7 @@
 							'<span class="cf7sa-tooltip hide-if-no-js" id="cf7sa-test-publishable-key"></span>' .
 						'</th>' .
 						'<td>' .
-							'<input id="' . CF7SA_META_PREFIX . 'test_publishable_key" name="' . CF7SA_META_PREFIX . 'test_publishable_key" type="text" class="large-text" value="' . esc_attr( $test_publishable_key ) . '" ' . ( ( !empty( $enable_test_mode ) && !empty( $use_stripe ) ) ? 'required' : '' ) . ' />' .
+							'<input id="' . CF7SA_META_PREFIX . 'test_publishable_key" name="' . CF7SA_META_PREFIX . 'test_publishable_key" type="text" class="large-text cf7sa_cus_css" value="' . esc_attr( $test_publishable_key ) . '" ' . ( ( !empty( $enable_test_mode ) && !empty( $use_stripe ) ) ? 'required' : '' ) . ' />' .
 						'</td>' .
 					'</tr>' .
 					'<tr class="form-field">' .
@@ -145,7 +145,7 @@
 							'<span class="cf7sa-tooltip hide-if-no-js" id="cf7sa-test-secret-key"></span>' .
 						'</th>' .
 						'<td>' .
-							'<input id="' . CF7SA_META_PREFIX . 'test_secret_key" name="' . CF7SA_META_PREFIX . 'test_secret_key" type="text" class="large-text" value="' . esc_attr( $test_secret_key ) . '" ' . ( ( !empty( $enable_test_mode ) && !empty( $use_stripe ) ) ? 'required' : '' ) . ' />' .
+							'<input id="' . CF7SA_META_PREFIX . 'test_secret_key" name="' . CF7SA_META_PREFIX . 'test_secret_key" type="text" class="large-text cf7sa_cus_css" value="' . esc_attr( $test_secret_key ) . '" ' . ( ( !empty( $enable_test_mode ) && !empty( $use_stripe ) ) ? 'required' : '' ) . ' />' .
 						'</td>' .
 					'</tr>' .
 					'<tr class="form-field">' .
@@ -156,7 +156,7 @@
 							'<span class="cf7sa-tooltip hide-if-no-js" id="cf7sa-live-publishable-key"></span>' .
 						'</th>' .
 						'<td>' .
-							'<input id="' . CF7SA_META_PREFIX . 'live_publishable_key" name="' . CF7SA_META_PREFIX . 'live_publishable_key" type="text" class="large-text" value="' . esc_attr( $live_publishable_key ) . '" ' . ( ( empty( $enable_test_mode ) && !empty( $use_stripe ) ) ? 'required' : '' ) . ' />' .
+							'<input id="' . CF7SA_META_PREFIX . 'live_publishable_key" name="' . CF7SA_META_PREFIX . 'live_publishable_key" type="text" class="large-text cf7sa_cus_css" value="' . esc_attr( $live_publishable_key ) . '" ' . ( ( empty( $enable_test_mode ) && !empty( $use_stripe ) ) ? 'required' : '' ) . ' />' .
 						'</td>' .
 					'</tr>' .
 					'<tr class="form-field">' .
@@ -167,7 +167,7 @@
 							'<span class="cf7sa-tooltip hide-if-no-js" id="cf7sa-live-secret-key"></span>' .
 						'</th>' .
 						'<td>' .
-							'<input id="' . CF7SA_META_PREFIX . 'live_secret_key" name="' . CF7SA_META_PREFIX . 'live_secret_key" type="text" class="large-text" value="' . esc_attr( $live_secret_key ) . '" ' . ( ( empty( $enable_test_mode ) && !empty( $use_stripe ) ) ? 'required' : '' ) . ' />' .
+							'<input id="' . CF7SA_META_PREFIX . 'live_secret_key" name="' . CF7SA_META_PREFIX . 'live_secret_key" type="text" class="large-text cf7sa_cus_css" value="' . esc_attr( $live_secret_key ) . '" ' . ( ( empty( $enable_test_mode ) && !empty( $use_stripe ) ) ? 'required' : '' ) . ' />' .
 						'</td>' .
 					'</tr>' .
 					'<tr class="form-field">' .
@@ -177,7 +177,7 @@
 							'</label>' .
 						'</th>' .
 						'<td>' .
-							'<input id="' . CF7SA_META_PREFIX . 'email" name="' . CF7SA_META_PREFIX . 'email" type="text" value="' . esc_attr( $email ) . '" ' . ( !empty( $email ) ? 'required' : '' ) . ' />' .
+							'<input class="cf7sa_cus_css" id="' . CF7SA_META_PREFIX . 'email" name="' . CF7SA_META_PREFIX . 'email" type="text" value="' . esc_attr( $email ) . '" ' . ( !empty( $email ) ? 'required' : '' ) . ' />' .
 						'</td>' .
 					'</tr>' .
 					'<tr class="form-field">' .
@@ -188,7 +188,7 @@
 							'<span class="cf7sa-tooltip hide-if-no-js" id="cf7sa-amount-field"></span>' .
 						'</th>' .
 						'<td>' .
-							'<input id="' . CF7SA_META_PREFIX . 'amount" name="' . CF7SA_META_PREFIX . 'amount" type="text" value="' . esc_attr( $amount ) . '" ' . ( !empty( $use_stripe ) ? 'required' : '' ) . ' />' .
+							'<input class="cf7sa_cus_css" id="' . CF7SA_META_PREFIX . 'amount" name="' . CF7SA_META_PREFIX . 'amount" type="text" value="' . esc_attr( $amount ) . '" ' . ( !empty( $use_stripe ) ? 'required' : '' ) . ' />' .
 						'</td>' .
 					'</tr>' .
 					'<tr class="form-field">' .
@@ -198,7 +198,7 @@
 							'</label>' .
 						'</th>' .
 						'<td>' .
-							'<input id="' . CF7SA_META_PREFIX . 'quantity" name="' . CF7SA_META_PREFIX . 'quantity" type="text" value="' . esc_attr( $quantity ) . '" />' .
+							'<input class="cf7sa_cus_css" id="' . CF7SA_META_PREFIX . 'quantity" name="' . CF7SA_META_PREFIX . 'quantity" type="text" value="' . esc_attr( $quantity ) . '" />' .
 						'</td>' .
 					'</tr>' .
 					'<tr class="form-field">' .
@@ -208,7 +208,7 @@
 							'</label>' .
 						'</th>' .
 						'<td>' .
-							'<input id="' . CF7SA_META_PREFIX . 'description" name="' . CF7SA_META_PREFIX . 'description" type="text" value="' . esc_attr( $description ) . '" />' .
+							'<input class="cf7sa_cus_css" id="' . CF7SA_META_PREFIX . 'description" name="' . CF7SA_META_PREFIX . 'description" type="text" value="' . esc_attr( $description ) . '" />' .
 						'</td>' .
 					'</tr>' .
 						'<tr class="form-field">' .

@@ -9,8 +9,8 @@ Requires PHP: 5.6
 License: GPLv3 or later License
 CF7 requires at least: 3.0
 CF7 tested up to: 5.8
-Stable tag: 2.1
-Version: 2.1
+Stable tag: 2.2
+Version: 2.2
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Contact Form 7 - Integrate Stripe payment gateway for making your payments through Contact Form 7. 
@@ -101,6 +101,8 @@ Yes, as same as using show another page using shortcode you can use same on emai
 5. Stripe Transaction Detail Page
 
 == Changelog ==
+= 2.2 =
+* Improved compatibility with WordPress VIP platform by refactoring code to adhere to VIP coding standards.
 
 = 2.1 =
 * The problem with the log file on the frontend has been resolved.

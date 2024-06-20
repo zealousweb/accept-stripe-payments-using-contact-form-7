@@ -56,7 +56,7 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 		 * @method action__init
 		 */
 		function action__init() {
-			 wp_register_style( CF7SA_PREFIX . '_admin_css', CF7SA_URL . 'assets/css/admin.min.css', array(), CF7SA_VERSION );
+			wp_register_style( CF7SA_PREFIX . '_admin_css', CF7SA_URL . 'assets/css/admin.min.css', array(), CF7SA_VERSION );
 			wp_register_script( CF7SA_PREFIX . '_admin_js', CF7SA_URL . 'assets/js/admin.min.js', array( 'jquery-core' ), CF7SA_VERSION );
 
 			 wp_register_style( 'select2', CF7SA_URL . 'assets/css/select2.min.css', array(), '4.0.7' );

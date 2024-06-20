@@ -195,13 +195,13 @@ function setCookie(cname, cvalue, exdays) {
                                     }
                                 } else {
                                      $('.wpcf7-form').removeClass('payment-submitting');
-                                     $message.html('').append('<span>'+ result.error.message +'</span>').slideDown('fast');
+                                     $message.html('').append('<span>Payment is faild</span>').slideDown('fast');
                                      $("#please-wait").hide();
                                 }
                             })
                           }else {
                               $('.wpcf7-form').removeClass('payment-submitting');
-                              $message.html('').append('<span>'+ frontend_msg_object.invalidresponse +'</span>').slideDown('fast');
+                              $message.html('').append('<span>Payment is faild</span>').slideDown('fast');
                               $("#please-wait").hide();
                           }
                           jQuery('.wpcf7-submit').prop("disabled",false);
