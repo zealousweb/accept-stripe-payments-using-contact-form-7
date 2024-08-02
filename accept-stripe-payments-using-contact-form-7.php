@@ -56,7 +56,7 @@ if ( !defined( 'CF7SA_PREFIX' ) ) {
 }
 
 if ( !defined( 'CFSAZW_PRODUCT' ) ) {
-	define( 'CFSAZW_PRODUCT', 'https://www.zealousweb.com/wordpress-plugins/accept-stripe-payments-using-contact-form-7/' );
+	define( 'CFSAZW_PRODUCT', 'https://store.zealousweb.com/accept-stripe-payments-using-contact-form-7-pro' );
 }
 
 /**

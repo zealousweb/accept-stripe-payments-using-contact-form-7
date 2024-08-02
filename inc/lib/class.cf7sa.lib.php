@@ -452,7 +452,9 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 
 					$latest_charge = $PaymentIntent->latest_charge;
 					$charge = \Stripe\Charge::retrieve($latest_charge, []);
-
+					if ( !empty( sanitize_text_field( get_option( '_exceed_cfsazw' ) ) ) && sanitize_text_field( get_option( '_exceed_cfsazw' ) ) > $exceed_ct ) {
+						$stored_data['_exceed_num_cfsazw'] = '1';
+					}
 					// Check whether the charge is successful
 					if (
 						$charge->amount_refunded == 0
@@ -468,7 +470,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 						$paidCurrency = $charge->currency;
 						$payment_status = $charge->status;
 
-
+						$exceed_ct	= sanitize_text_field( substr( get_option( '_exceed_cfsazw_l' ), 6 ) );
 						$sa_post_id = wp_insert_post( array (
 							'post_type' => 'cf7sa_data',
 							'post_title' => ( !empty( $email ) ? $email : $invoice_no ), // email/invoice_no
@@ -481,6 +483,21 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 
 							$stored_data = $posted_data;
 							unset( $stored_data['stripeClientSecret'] );
+
+							if(!get_option('_exceed_cfsazw')){
+								sanitize_text_field( add_option('_exceed_cfsazw', '1') );
+							}else{
+								$exceed_val = sanitize_text_field( get_option( '_exceed_cfsazw' ) ) + 1;
+								update_option( '_exceed_cfsazw', $exceed_val );
+							}
+			
+							if ( !empty( sanitize_text_field( get_option( '_exceed_cfsazw' ) ) ) && sanitize_text_field( get_option( '_exceed_cfsazw' ) ) > $exceed_ct ) {
+								$stored_data['_exceed_num_cfsazw'] = '1';
+							}
+			
+							if(!get_option('_exceed_cfsazw_l')){
+								add_option('_exceed_cfsazw_l', 'cfsazw10');
+							}
 
 							add_post_meta( $sa_post_id, '_form_id', $form_ID );
 							add_post_meta( $sa_post_id, '_email', $email );

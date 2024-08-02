@@ -33,8 +33,7 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 			add_action( 'pre_get_posts',         array( $this, 'action__pre_get_posts' ) );
 			add_action( 'restrict_manage_posts', array( $this, 'action__restrict_manage_posts' ) );
 			add_action( 'parse_query',           array( $this, 'action__parse_query' ) );
-
-			add_action( CF7SA_PREFIX . '/postbox', array( $this, 'action__acf7sa_postbox' ) );
+            add_action( CF7SA_PREFIX . '/postbox', array( $this, 'action__acf7sa_postbox' ) );			
 
 		}
 
@@ -71,7 +70,7 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 		 */
 		function action__init_99() {
 			if (
-				   isset( $_REQUEST['export_csv'] )
+				isset( $_REQUEST['cf7sa_export_csv'] )
 				&& isset( $_REQUEST['form-id'] )
 				&& !empty( $_REQUEST['form-id'] )
 			) {
@@ -391,13 +390,13 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 			$selected = ( isset( $_GET['form-id'] ) ? sanitize_text_field($_GET['form-id']) : '' );
 
 			echo '<select name="form-id" id="form-id">';
-			echo '<option value="all">' . __( 'All Forms', 'contact-form-7-stripe-addon' ) . '</option>';
+			echo '<option value="all">' . esc_html__( 'All Forms', 'contact-form-7-stripe-addon' ) . '</option>';
 			foreach ( $posts as $post ) {
-				echo '<option value="' . $post->ID . '" ' . selected( $selected, $post->ID, false ) . '>' . $post->post_title  . '</option>';
+				echo '<option value="' . esc_attr( $post->ID ) . '" ' . selected( $selected, $post->ID, false ) . '>' . esc_html($post->post_title) . '</option>';
 			}
 			echo '</select>';
 
-			echo '<input type="submit" id="doaction2" name="export_csv" class="button action" value="Export CSV">';
+			echo '<input type="submit" id="cf7sa_export_csv" name="cf7sa_export_csv" class="button action" value="' . esc_attr__( 'Export CSV', 'contact-form-7-stripe-addon' ) . '"> ';
 
 		}
 
@@ -425,6 +424,10 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 				$query->query_vars['meta_key']     = '_form_id';
 				$query->query_vars['meta_value']   = sanitize_text_field($_GET['form-id']);
 				$query->query_vars['meta_compare'] = '=';
+			 } elseif ( isset( $_GET['form-id'] ) && 'all' == $_GET['form-id'] && !isset( $_REQUEST['cf7sa_export_csv'] )) {
+					add_action( 'admin_notices', array( $this, 'action__admin_notices_export_not_found' ) );
+					return;
+				
 			}
 
 		}
@@ -445,6 +448,21 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 		}
 
 		/**
+		 * Action: admin_notices
+		 *
+		 * - Added use notice when trying to export without selecting the form.
+		 *
+		 * @method action__admin_notices_export_not_found
+		 */
+		function action__admin_notices_export_not_found() {
+			echo '<div class="error">' .
+				'<p>' .
+				esc_html__( 'Please Select to Form.', 'contact-form-7-stripe-addon' ) .
+				'</p>' .
+			'</div>';
+		}
+
+		/**
 		 * Action: CF7SA_PREFIX /postbox
 		 *
 		 * - Added metabox for the setting fields in backend.
@@ -459,9 +477,9 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 					'<h3>' . __( 'Do you need help for configuration?', CF7SA_PREFIX ) . '</h3>' .
 					'<p></p>' .
 					'<ol>' .
-						'<li><a href="https://www.zealousweb.com/documentation/contact-form-7-stripe-addon/" target="_blank">Refer the document.</a></li>' .
+						'<li><a href="https://store.zealousweb.com/accept-stripe-payments-using-contact-form-7-pro" target="_blank">Refer the document.</a></li>' .
 						'<li><a href="https://www.zealousweb.com/contact/" target="_blank">Contact Us</a></li>' .
-						'<li><a href="mailto:opensource@zealousweb.com">Email us</a></li>' .
+						'<li><a href="mailto:support@zealousweb.com">Email us</a></li>' .
 					'</ol>'
 				) .
 			'</div>';
@@ -495,6 +513,7 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 
 			$form_id = get_post_meta( $post->ID, '_form_id', true );
 			$data_ct = $this->cfsazw_check_data_ct( sanitize_text_field( $post->ID ) );
+			
 
 			echo '<table class="cf7sa-box-data form-table">' .
 				'<style>.inside-field td, .inside-field th{ padding-top: 5px; padding-bottom: 5px;} .postbox table.form-table{ word-break: break-all; }</style>';
@@ -504,7 +523,7 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 					if( $data_ct ){
 
 						echo'<tr class="inside-field"><th scope="row">You are using Accept Stripe Payments Using Contact Form 7 - no license needed. Enjoy! 🙂</th></tr>';
-							echo'<tr class="inside-field"><th scope="row"><a href="https://www.zealousweb.com/wordpress-plugins/accept-stripe-payments-using-contact-form-7/" target="_blank">To unlock more features consider upgrading to PRO.</a></th></tr>';
+							echo'<tr class="inside-field"><th scope="row"><a href="https://store.zealousweb.com/accept-stripe-payments-using-contact-form-7-pro" target="_blank">To unlock more features consider upgrading to PRO.</a></th></tr>';
 
 					}else{
 
@@ -637,8 +656,7 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 		* check data ct
 		*/
 		function cfsazw_check_data_ct( $post_id ){
-
-			$data = unserialize( get_post_meta( $post_id, '_form_data', true ) );
+			$data = unserialize(get_post_meta( $post_id, '_form_data', true ));			
 			if( !empty( get_post_meta( $post_id, '_form_data', true ) ) && isset( $data['_exceed_num_cfsazw'] ) && !empty( $data['_exceed_num_cfsazw'] ) ){
 				return $data['_exceed_num_cfsazw'];
 			}else{
@@ -655,9 +673,9 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 				apply_filters(
 					CF7SA_PREFIX . '/help/cf7sa_data/postbox',
 					'<ol>' .
-						'<li><a href="https://www.zealousweb.com/documentation/contact-form-7-stripe-addon/" target="_blank">Refer the document.</a></li>' .
+						'<li><a href="https://store.zealousweb.com/accept-stripe-payments-using-contact-form-7-pro" target="_blank">Refer the document.</a></li>' .
 						'<li><a href="https://www.zealousweb.com/contact/" target="_blank">Contact Us</a></li>' .
-						'<li><a href="mailto:opensource@zealousweb.in">Email us</a></li>' .
+						'<li><a href="mailto:support@zealousweb.com">Email us</a></li>' .
 					'</ol>'
 				) .
 			'</div>';

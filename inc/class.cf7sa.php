@@ -51,6 +51,10 @@ if ( !class_exists( 'CF7SA' ) ) {
 
 			/* Initialize backend tags */
 			add_action( 'wpcf7_admin_init', array( $this, 'action__wpcf7_admin_init' ), 15, 0 );
+
+			if(!get_option('_exceed_cfsazw_l')){
+				add_option('_exceed_cfsazw_l', 'cfsazw10');
+			}
 			
 		}
 
@@ -121,8 +125,9 @@ if ( !class_exists( 'CF7SA' ) ) {
 			 */
 
 			$labels = array(
-				'name' => __( 'Stripe Add-on', 'contact-form-7-stripe-addon' ),
+				'name'          => __( 'Stripe Add-on', 'contact-form-7-stripe-addon' ),
 				'singular_name' => __( 'Stripe Add-on', 'contact-form-7-stripe-addon' ),
+				'not_found'     => __( 'No Transactions Found.', 'contact-form-7-stripe-addon' ),
 			);
 
 			$args = array(
