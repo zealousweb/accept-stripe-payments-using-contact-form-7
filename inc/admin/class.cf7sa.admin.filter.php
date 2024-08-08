@@ -28,6 +28,7 @@ if ( !class_exists( 'CF7SA_Admin_Filter' ) ) {
 			add_filter( 'manage_edit-cf7sa_data_sortable_columns', array( $this, 'filter__manage_cf7sa_data_sortable_columns' ), 10, 3 );
 			add_filter( 'manage_cf7sa_data_posts_columns',         array( $this, 'filter__manage_cf7sa_data_posts_columns' ), 10, 3 );
 			add_filter( 'bulk_actions-edit-cf7sa_data',            array( $this, 'filter__bulk_actions_edit_cf7sa_data' ) );
+			add_filter( 'plugin_action_links', array( $this,'filter__admin_plugin_links'), 10, 2 ); 
 
 		}
 
@@ -155,6 +156,26 @@ if ( !class_exists( 'CF7SA_Admin_Filter' ) ) {
 			require_once( CF7SA_DIR . '/inc/admin/template/' . CF7SA_PREFIX . '.template.php' );
 
 		}
+		 /**
+        * add documentation link in plugins
+        */
+
+        function filter__admin_plugin_links( $links, $file ) {
+            if ( $file != CF7SA_PLUGIN_BASENAME ) {
+                return $links;
+            }
+        
+            if ( ! current_user_can( 'wpcf7_read_contact_forms' ) ) {
+                return $links;
+            }
+			// Add your donation link
+			$documentLink = '<a target="_blank" href="https://store.zealousweb.com/accept-stripe-payments-using-contact-form-7-pro">' . __( 'Document Link', 'contact-form-7-stripe-addon' ) . '</a>';
+			$donateLink = '<a target="_blank" href="http://www.zealousweb.com/payment/">' . __( 'Donate', 'contact-form-7-stripe-addon' ) . '</a>';
+            array_unshift( $links ,$documentLink,$donateLink);
+        
+            return $links;
+        }
 
 	}
+
 }
