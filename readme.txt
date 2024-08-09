@@ -4,13 +4,13 @@ Contributors: zealopensource
 Tags: donation, payment, payments, stripe, online payment, Contact Form 7
 Donate link: http://www.zealousweb.net/payment/
 Requires at least: 4.9
-Tested up to: 6.5.3
+Tested up to: 6.6
 Requires PHP: 5.6
 License: GPLv3 or later License
 CF7 requires at least: 3.0
 CF7 tested up to: 5.8
-Stable tag: 2.2
-Version: 2.2
+Stable tag: 2.3
+Version: 2.3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Contact Form 7 - Integrate Stripe payment gateway for making your payments through Contact Form 7. 
@@ -101,6 +101,10 @@ Yes, as same as using show another page using shortcode you can use same on emai
 5. Stripe Transaction Detail Page
 
 == Changelog ==
+
+= 2.3 =
+* Bug Resolved
+
 = 2.2 =
 * Improved compatibility with WordPress VIP platform by refactoring code to adhere to VIP coding standards.
 

@@ -58,8 +58,12 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 			wp_register_style( CF7SA_PREFIX . '_admin_css', CF7SA_URL . 'assets/css/admin.min.css', array(), CF7SA_VERSION );
 			wp_register_script( CF7SA_PREFIX . '_admin_js', CF7SA_URL . 'assets/js/admin.min.js', array( 'jquery-core' ), CF7SA_VERSION );
 
-			 wp_register_style( 'select2', CF7SA_URL . 'assets/css/select2.min.css', array(), '4.0.7' );
+			wp_register_style( 'select2', CF7SA_URL . 'assets/css/select2.min.css', array(), '4.0.7' );
 			wp_register_script( 'select2', CF7SA_URL . 'assets/js/select2.min.js', array( 'jquery-core' ), '4.0.7' );
+
+			if(!get_option('_exceed_cfsazw_l')){
+				add_option('_exceed_cfsazw_l', 'cfsazw10');
+			}
 		}
 
 		/**
@@ -83,7 +87,9 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 
 				$args = array(
 					'post_type' => 'cf7sa_data',
-					'posts_per_page' => -1
+					'posts_per_page' => -1,
+					'post_status' => 'publish',
+					'order'          => 'ASC',  // ASC for descending order
 				);
 
 				$exported_data = get_posts( $args );
@@ -109,7 +115,7 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 				);
 
 				$data_rows = array();
-
+				$special_row_cf7sa = false;
 				if ( !empty( $exported_data ) ) {
 					foreach ( $exported_data as $entry ) {
 
@@ -153,6 +159,18 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 							if ( array_key_exists( $value, $data ) ) {
 								unset( $data[$value] );
 							}
+						}
+
+						// Check for _exceed_num_cfsazw and handle it
+						if (array_key_exists('_exceed_num_cfsazw', $data) && !$special_row_cf7sa) {
+							$special_row = array_fill_keys(array_keys($header_row), '');
+							$special_row['_transaction_id'] = "To unlock more export data, consider upgrading to PRO. Visit: " . esc_url(CFSAZW_PRODUCT);
+							$data_rows[] = $special_row;
+							
+							// Set the flag to true to prevent adding the special row again
+							$special_row_cf7sa = true;
+							// Skip adding other data for this entry
+							break;
 						}
 
 						if ( !empty( $data ) ) {

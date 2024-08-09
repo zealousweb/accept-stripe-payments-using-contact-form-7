@@ -52,10 +52,6 @@ if ( !class_exists( 'CF7SA' ) ) {
 			/* Initialize backend tags */
 			add_action( 'wpcf7_admin_init', array( $this, 'action__wpcf7_admin_init' ), 15, 0 );
 
-			if(!get_option('_exceed_cfsazw_l')){
-				add_option('_exceed_cfsazw_l', 'cfsazw10');
-			}
-			
 		}
 
 		function action__setup_theme() {
