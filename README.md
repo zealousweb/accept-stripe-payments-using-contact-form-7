@@ -1,22 +1,26 @@
 # Accept Stripe Payments Using Contact Form 7
 With the help of Accept Stripe Payments Using Contact Form 7, users can receive Credit Card Payments directly from Customers. The Plugin is potentially useful in receiving payments safely from any Contact Form 7 form, which is hosted on any page or post for that matter.
 
-**FEATURES OF ACCEPT STRIPE PAYMENTS USING CONTACT FORM 7**
-- Receive payments in 25 different currencies.
-- Create multiple payment forms using Contact Form 7.
-- Permits to take values from all input fields including drop-down menu, textbox, hidden field, radio buttons, etc.
-- Accepts dynamic value from front-end parameters like item description, amount, email, quantity, and customer details.
-- You can enable Test API Mode to ensure the proper functioning of the payments transactions.
-- In the Free version of Stripe! you can view the payment transactions of up to 10 Entries in the admin panel.
-- Easy to export Contact Form 7 payment data to CSV.
-- Options for filters and search facility at the Admin side.
-- Admin can easily view or delete Contact Form 7 payment data.
-- Provides Shortcode [stripe-details] to display the transaction ID, Amount with currency, and transaction status after the transaction is made.
-- Individual emails are sent to customers and admin after stripe payment transactions.
-- You can personalize the content of the email sent to the customer and admin after transactions.
+**Features of Accept Stripe Payments Using Contact Form 7**
+
+- Enable Postal Code / Zip Code Field on the Card: Add an option to include a postal code or zip code field in the payment card details.
+- Dynamic Payment Successful Message for Admin: Allow admins to customize and display a dynamic message upon successful payment.
+- You can get paid in 25 different currencies.
+- You can make various payment forms using Contact Form 7.
+- It can handle input from different types of fields like dropdowns, textboxes, radio buttons, etc.
+- It can take values from the website like item description, price, email, quantity, and customer info.
+- You can test payments before going live.
+- With the free version, you can see up to 10 payment transactions in the admin area.
+- You can easily export payment data to a CSV file.
+- The admin can filter and search payment data easily.
+- Admins can view or delete payment data easily.
+- You can use a shortcode [stripe-details] to show transaction details like ID, amount, and status.
+- Both the customer and admin get emails after payment.
+- You can customize the content of these emails.
 - Stripe payment tag added to email content will display stripe payment response in email.
 - You can set ‘Success Return URL’ and ‘Cancel Return URL’ pages to redirect after the payment transaction.
-- Get more information of Pro version here
+
+  [Learn more about the Pro version](https://store.zealousweb.com/accept-stripe-payments-using-contact-form-7-pro)
 
 # PLUGIN REQUIREMENT
 - PHP version : 5.4 and latest
