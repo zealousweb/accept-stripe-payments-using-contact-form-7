@@ -1,4 +1,7 @@
 # Accept Stripe Payments Using Contact Form 7
+Introducing ZealousWeb’s new way to get paid online: easily accept credit card payments on your website using Stripe and Contact Form 7. With our plugin, Accept Stripe Payments Using Contact Form 7, anyone can receive payments from customers hassle-free. Just add the plugin to your website, and any Contact Form 7 becomes a safe payment spot. Customers fill out the form, and Stripe takes care of the rest, making sure it’s quick and secure.
+
+No need for hard setups or extra tools. It’s all about keeping things easy and safe for businesses big and small. Give our plugin a try today and watch your revenue grow without any payment headaches for your customers.
 With the help of Accept Stripe Payments Using Contact Form 7, users can receive Credit Card Payments directly from Customers. The Plugin is potentially useful in receiving payments safely from any Contact Form 7 form, which is hosted on any page or post for that matter.
 
 **Features of Accept Stripe Payments Using Contact Form 7**
@@ -25,6 +28,8 @@ With the help of Accept Stripe Payments Using Contact Form 7, users can receive 
 # PLUGIN REQUIREMENT
 - PHP version : 5.4 and latest
 - WordPress : WordPress 3.0 and latest
+
+<strong>[Demo for Abandoned Contact Form 7 Pro](https://demo.zealousweb.com/wordpress-plugins/accept-stripe-payments-using-contact-form-7/))</strong>
 
 # Installation
 Installing the plugin is easy. Just follow these steps:
