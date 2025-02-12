@@ -1,16 +1,16 @@
 === Accept Stripe Payments Using Contact Form 7 ===
 
 Contributors: zealopensource
-Tags: donation, payment, payments, stripe, online payment, Contact Form 7
-Donate link: http://www.zealousweb.net/payment/
+Tags: donation, payment, payments, stripe, online payment
+Donate link: http://www.zealousweb.com/payment/
 Requires at least: 4.9
-Tested up to: 6.5.3
+Tested up to: 6.6
 Requires PHP: 5.6
 License: GPLv3 or later License
 CF7 requires at least: 3.0
 CF7 tested up to: 5.8
-Stable tag: 2.2
-Version: 2.2
+Stable tag: 2.8
+Version: 2.8
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Contact Form 7 - Integrate Stripe payment gateway for making your payments through Contact Form 7. 
@@ -22,7 +22,8 @@ Introducing ZealousWeb's new way to get paid online: easily accept credit card p
 No need for hard setups or extra tools. It's all about keeping things easy and safe for businesses big and small. Give our plugin a try today and watch your revenue grow without any payment headaches for your customers.
 
 = Features of Accept Stripe Payments Using Contact Form 7 =
-
+* Enable Postal Code / Zip Code Field on the Card: Add an option to include a postal code or zip code field in the payment card details.
+* Dynamic Payment Successful Message for Admin: Allow admins to customize and display a dynamic message upon successful payment.
 * You can get paid in 25 different currencies.
 * You can make various payment forms using Contact Form 7.
 * It can handle input from different types of fields like dropdowns, textboxes, radio buttons, etc.
@@ -97,10 +98,37 @@ Yes, as same as using show another page using shortcode you can use same on emai
 2. Stripe Settings and Configuration
 3. Stripe Amount Field Configuration
 4. Stripe Card Amount Field Configuration
-4. Stripe Payments List Page
-5. Stripe Transaction Detail Page
+5. Stripe Payments List Page
+6. Stripe Transaction Detail Page
+7. Enable the Postal Code / Zip Code field on the Card and Payment Successful Message dynamic for admin
 
 == Changelog ==
+
+= 2.8 =
+* Minor adjustment regarding workflow
+
+== Changelog ==
+
+= 2.7 =
+* security issues fixed.
+* radio button values issue fixed.
+
+
+= 2.6 =
+* security issues fixed.
+* select box values issue fixed.
+* radio button value issue fixed.
+
+= 2.5 =
+* spinner issue fixed.
+
+= 2.4 =
+* Enable the Postal Code / Zip Code field on the Card
+* Dynamic Payment Successful Message for Admin: Allow admins to customize and display a dynamic message upon successful payment.
+
+= 2.3 =
+* Bug Resolved
+
 = 2.2 =
 * Improved compatibility with WordPress VIP platform by refactoring code to adhere to VIP coding standards.
 

@@ -82,6 +82,12 @@ function setCookie(cname, cvalue, exdays) {
           $('input[name="stripeClientSecret"]', form).val(token)
       }
       wpcf7_cf7sa.initForm = function(form) {
+          var enablePostalCode = cf7sa_object.enablePostalCode;
+          if(enablePostalCode == 1){
+            var enablePostalCodecf7 = true;
+          }else{
+            var enablePostalCodecf7 = false;
+          } 
           jQuery('.wpcf7-submit').prop("disabled",true);
           var $form = $(form);
           var form_id = wpcf7_cf7sa.getId($form);
@@ -93,7 +99,8 @@ function setCookie(cname, cvalue, exdays) {
               stripe = Stripe(cf7sa_object.cf7sa_stripe[form_id]);
               elements = stripe.elements();
               cardElement = elements.create('card', {
-                  style: JSON.parse(cf7sa_object.cf7sa_stripe_style[form_id])
+                  style: JSON.parse(cf7sa_object.cf7sa_stripe_style[form_id]),
+                  hidePostalCode: enablePostalCodecf7,
               });
               cardElement.mount('#card-element-' + form_id);
               cardElement.addEventListener('change', function(event) {
@@ -156,6 +163,7 @@ function setCookie(cname, cvalue, exdays) {
                       processData: !1,
                       contentType: !1,
                       beforeSend: function() {
+                          $(".wpcf7-spinner").css("visibility", "visible");
                           $('.ajax-loader', $form).addClass('is-active');
                           $('.wpcf7-form').addClass('payment-submitting');
                           jQuery('.wpcf7-submit').prop("disabled",true);
@@ -192,17 +200,20 @@ function setCookie(cname, cvalue, exdays) {
                                         $('.wpcf7-form').removeClass('payment-submitting');
                                         $message.html('').append('<span>'+ frontend_msg_object.undefined +'</span>').slideDown('fast');
                                         $("#please-wait").hide();
+                                        $(".wpcf7-spinner").css("visibility", "hidden");
                                     }
                                 } else {
                                      $('.wpcf7-form').removeClass('payment-submitting');
                                      $message.html('').append('<span>Payment is faild</span>').slideDown('fast');
                                      $("#please-wait").hide();
+                                     $(".wpcf7-spinner").css("visibility", "hidden");
                                 }
                             })
                           }else {
                               $('.wpcf7-form').removeClass('payment-submitting');
                               $message.html('').append('<span>Payment is faild</span>').slideDown('fast');
                               $("#please-wait").hide();
+                              $(".wpcf7-spinner").css("visibility", "hidden");
                           }
                           jQuery('.wpcf7-submit').prop("disabled",false);
                       }
@@ -443,6 +454,7 @@ function setCookie(cname, cvalue, exdays) {
               ajaxSuccess(data, status, xhr, $form);
               $('.ajax-loader', $form).removeClass('is-active');
               $("#please-wait").hide();
+              $(".wpcf7-spinner").css("visibility", "hidden");
               $('.wpcf7-form').removeClass('payment-submitting')
           }).fail(function(xhr, status, error) {
               var $e = $('<div class="ajax-error"></div>').text(error.message);
@@ -578,4 +590,3 @@ function setCookie(cname, cvalue, exdays) {
       CustomEvent.prototype = window.Event.prototype;
       window.CustomEvent = CustomEvent
   })()
-  

@@ -51,7 +51,8 @@
 	$state                   = get_post_meta( $post_id, CF7SA_META_PREFIX . 'state', true );
 	$zip_code                = get_post_meta( $post_id, CF7SA_META_PREFIX . 'zip_code', true );
 	$country                 = get_post_meta( $post_id, CF7SA_META_PREFIX . 'country', true );
-
+	$enable_postal_code      = get_post_meta( $post_id, CF7SA_META_PREFIX . 'enable_postal_code', true );
+	$payment_success_msg     = get_post_meta( $post_id, CF7SA_META_PREFIX . 'payment-success-msg', true );
 
 	$currency_code = array(
 		'AUD' => 'Australian Dollar',
@@ -267,6 +268,28 @@
 
 							echo '</select>' .
 						'</td>' .
+					'</tr>'.
+					'<tr class="form-field">' .
+						'<th scope="row">' .
+							'<label for="' . CF7SA_META_PREFIX . 'enable_postal_code">' .
+								__( 'Enable Postal Code field on the Card.', 'contact-form-7-stripe-addon' ) .
+							'</label>' .
+							'<span class="cf7sa-tooltip hide-if-no-js" id="cf7sa-enable-postal-code"></span>' .
+						'</th>' .
+						'<td>' .
+							'<input id="' . CF7SA_META_PREFIX . 'enable_postal_code" name="' . CF7SA_META_PREFIX . 'enable_postal_code" type="checkbox" class="enable_required" value="1" ' . checked( $enable_postal_code, 1, false ) . '/>' .
+						'</td>' .
+					'</tr>'.
+					'<tr class="form-field">' .
+					    '<th>' .
+					        '<label for="' . CF7SA_META_PREFIX . 'payment-success-msg">' .
+					            __( 'Payment Successful Message', 'contact-form-7-stripe-addon' ) .
+					        '</label>' .
+					        '<span class="cf7sa-tooltip hide-if-no-js" id="cf7sa-payment-success-msg"></span>' .
+					    '</th>' .
+					    '<td>' .
+					        '<textarea class="cf7sa_cus_css" id="' . CF7SA_META_PREFIX . 'payment-success-msg" name="' . CF7SA_META_PREFIX . 'payment-success-msg">' . esc_textarea( $payment_success_msg ) . '</textarea>' .
+					    '</td>' .
 					'</tr>';
 
 					/**
@@ -457,6 +480,30 @@
 							content: '<?php
 					_e( '<h3>Select Currency</h3>' .
 					'<p>Select the currency which is selected from your stripe.net merchant account.<br/><strong>Note:</strong>Stripe dont provide multiple currencies for single account</p>',
+					'contact-form-7-stripe-addon'
+					); ?>',
+							position: 'left center',
+						} ).pointer('open');
+					} );
+					jQuery( '#cf7sa-enable-postal-code' ).on( 'hover click', function() {
+						jQuery( 'body .wp-pointer-buttons .close' ).trigger( 'click' );
+						jQuery( '#cf7sa-enable-postal-code' ).pointer({
+							pointerClass: 'wp-pointer cf7sa-pointer',
+							content: '<?php
+					_e( '<h3>Enable Postal Code field on the Card.</h3>' .
+					'<p>Enable the Postal Code field on the card for each form individually.</p>',
+					'contact-form-7-stripe-addon'
+					); ?>',
+							position: 'left center',
+						} ).pointer('open');
+					} );
+					jQuery( '#cf7sa-payment-success-msg' ).on( 'hover click', function() {
+						jQuery( 'body .wp-pointer-buttons .close' ).trigger( 'click' );
+						jQuery( '#cf7sa-payment-success-msg' ).pointer({
+							pointerClass: 'wp-pointer cf7sa-pointer',
+							content: '<?php
+					_e( '<h3>Payment Successful Message.</h3>' .
+					'<p>Message Displayed After Form Submission and Successful Payment</p>',
 					'contact-form-7-stripe-addon'
 					); ?>',
 							position: 'left center',

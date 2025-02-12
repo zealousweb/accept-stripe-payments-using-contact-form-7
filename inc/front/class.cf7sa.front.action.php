@@ -68,6 +68,7 @@ if ( !class_exists( 'CF7SA_Front_Action' ) ){
 					$test_publishable_key    = get_post_meta( $id, CF7SA_META_PREFIX . 'test_publishable_key', true );
 					$live_publishable_key    = get_post_meta( $id, CF7SA_META_PREFIX . 'live_publishable_key', true );
 					$stripe_api[$id] = ( !empty( $enable_test_mode ) ? $test_publishable_key : $live_publishable_key );
+					$enable_postal_code = get_post_meta($id, CF7SA_META_PREFIX . 'enable_postal_code', true);
 					$stripe_api_style[$id] = apply_filters(
 						CF7SA_PREFIX . '/form/stripe/' . $id,
 						json_encode( $style )
@@ -83,7 +84,8 @@ if ( !class_exists( 'CF7SA_Front_Action' ) ){
 					'ajax_url' => admin_url( 'admin-ajax.php' ),
 					'cf7sa_active' => $get_posts,
 					'cf7sa_stripe' => $stripe_api,
-					'cf7sa_stripe_style' => $stripe_api_style
+					'cf7sa_stripe_style' => $stripe_api_style,
+					'enablePostalCode' => $enable_postal_code,
 				)
 			);
 

@@ -542,7 +542,11 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 							   $payment_status == 'succeeded'
 							|| $payment_status == 'paid'
 						) {
-							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( __( 'Transaction is Successfully Completed.', CF7SA_PREFIX ) );
+							$payment_success_msg = get_post_meta($form_ID, CF7SA_META_PREFIX . 'payment-success-msg', true);
+
+							$payment_success_msg_cf7 = !empty($payment_success_msg) ? $payment_success_msg : 'Transaction is Successfully Completed.';
+
+							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( __( $payment_success_msg_cf7, CF7SA_PREFIX ) );
 						} else if ( $payment_status == 'pending' ) {
 							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( __( 'Transaction is in pending.', CF7SA_PREFIX ) );
 						} else {

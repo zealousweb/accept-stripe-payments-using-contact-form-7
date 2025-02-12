@@ -80,10 +80,6 @@ if ( !class_exists( 'CF7SA_Front' ) ) {
 		function filter__template_include( $template ) {
 			global $wp_query;
 
-			if ( isset( $wp_query->query_vars[$this::BASE_ENDPOINT] ) ) {
-				return CF7SA_DIR . '/inc/front/template/cf7sa-info.php';
-			}
-
 			if ( isset( $wp_query->query_vars[$this::WEBHOOK_ENDPOINT] ) ) {
 				return CF7SA_DIR . '/inc/front/template/cf7sa-webhook.php';
 			}
