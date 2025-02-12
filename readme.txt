@@ -9,8 +9,8 @@ Requires PHP: 5.6
 License: GPLv3 or later License
 CF7 requires at least: 3.0
 CF7 tested up to: 5.8
-Stable tag: 2.8
-Version: 2.8
+Stable tag: 2.9
+Version: 2.9
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Contact Form 7 - Integrate Stripe payment gateway for making your payments through Contact Form 7. 
@@ -104,15 +104,17 @@ Yes, as same as using show another page using shortcode you can use same on emai
 
 == Changelog ==
 
-= 2.8 =
-* Minor adjustment regarding workflow
+= 2.9 =
+* Minor adjustments
 
 == Changelog ==
+
+= 2.8 =
+* Minor adjustments regarding workflow
 
 = 2.7 =
 * security issues fixed.
 * radio button values issue fixed.
-
 
 = 2.6 =
 * security issues fixed.

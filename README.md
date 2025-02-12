@@ -29,7 +29,7 @@ With the help of Accept Stripe Payments Using Contact Form 7, users can receive 
 - PHP version : 5.4 and latest
 - WordPress : WordPress 3.0 and latest
 
-<strong>[Demo for Abandoned Contact Form 7 Pro](https://demo.zealousweb.com/wordpress-plugins/accept-stripe-payments-using-contact-form-7/))</strong>
+<strong>[Demo for Abandoned Contact Form 7 Pro](https://demo.zealousweb.com/wordpress-plugins/accept-stripe-payments-using-contact-form-7/)</strong>
 
 # Installation
 Installing the plugin is easy. Just follow these steps:
