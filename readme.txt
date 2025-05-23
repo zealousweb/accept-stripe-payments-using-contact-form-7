@@ -41,6 +41,18 @@ No need for hard setups or extra tools. It's all about keeping things easy and s
 
 <strong>[Demo for Accept Stripe Payments Using Contact Form 7 Pro](https://demo.zealousweb.com/wordpress-plugins/accept-stripe-payments-using-contact-form-7/)</strong>
 
+= Features of Accept Stripe Payments Using Contact Form 7 Pro =
+* You can enable Test API Mode to ensure the proper functioning of the payments transactions.
+* Saves the payment related data into the database.
+* You can view Stripe payment data details at Admin side.
+* Easy to export Contact Form 7 payment data to CSV.
+* Options for filters and search facility at the Admin side.
+* Admin can easily view or delete Contact Form 7 payment data.
+* Provides Shortcode [stripe-details] to display the transaction ID, Amount with currency and transaction status after the transaction is made.
+* Individual emails are sent to customer and admin after stripe payment transactions.
+* You can personalize the content of the email sent to the customer and admin after transactions.
+* Recuring Payment accept with stripe and also set option to cancel recuring from admin
+
 <strong>[Get more information of Pro version here](https://store.zealousweb.com/accept-stripe-payments-using-contact-form-7-pro)</strong>
 <strong>[Demo for Accept Stripe Payments Using Contact Form 7 Pro](https://demo.zealousweb.com/wordpress-plugins/accept-stripe-payments-using-contact-form-7-pro/)</strong>
 
