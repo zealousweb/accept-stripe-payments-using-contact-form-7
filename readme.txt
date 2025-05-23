@@ -4,13 +4,13 @@ Contributors: zealopensource
 Tags: donation, payment, payments, stripe, online payment
 Donate link: http://www.zealousweb.com/payment/
 Requires at least: 4.9
-Tested up to: 6.6
+Tested up to: 6.8
 Requires PHP: 5.6
 License: GPLv3 or later License
 CF7 requires at least: 3.0
 CF7 tested up to: 5.8
-Stable tag: 2.9
-Version: 2.9
+Stable tag: 3.0
+Version: 3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Contact Form 7 - Integrate Stripe payment gateway for making your payments through Contact Form 7. 
@@ -39,9 +39,25 @@ No need for hard setups or extra tools. It's all about keeping things easy and s
 * Stripe payment tag added to email content will display stripe payment response in email.
 * You can set ‘Success Return URL’ and ‘Cancel Return URL’ pages to redirect after the payment transaction.
 
-<strong>[Get more Features check our Pro version here](https://store.zealousweb.com/accept-stripe-payments-using-contact-form-7-pro)</strong>
+<strong>[Demo for Accept Stripe Payments Using Contact Form 7 Pro](https://demo.zealousweb.com/wordpress-plugins/accept-stripe-payments-using-contact-form-7/)</strong>
 
-Check out the <strong>[Pro plugin documentation link](https://store.zealousweb.com/pub/media/catalog/product/file/Documentation_-_Accept_Stripe_Payments_Using_Contact_Form_7_-_ZealousWeb_5.pdf)</strong> !here.
+<strong>[Get more information of Pro version here](https://store.zealousweb.com/accept-stripe-payments-using-contact-form-7-pro)</strong>
+<strong>[Demo for Accept Stripe Payments Using Contact Form 7 Pro](https://demo.zealousweb.com/wordpress-plugins/accept-stripe-payments-using-contact-form-7-pro/)</strong>
+
+== OUR OTHER PLUGINS ==
+
+* <strong>[Abandoned Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/abandoned-contact-form-7-pro)</strong>
+* <strong>[Accept 2 Checkout Payments Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/accept-2checkout-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept Authorize.NET Payments Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/accept-authorize-net-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept Elavon Payments Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/accept-elavon-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept PayPal Payments Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/accept-paypal-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept Sagepay(Opayo) Payments Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/accept-sage-pay-opayo-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept Stripe Payments Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/accept-stripe-payments-using-contact-form-7-pro)</strong>
+* <strong>[Custom Product Options WooCommerce Pro](https://store.zealousweb.com/wordpress-plugins/custom-product-options-woocommerce-pro)</strong>
+* <strong>[Generate PDF Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/generate-pdf-using-contact-form-7-pro)</strong>
+* <strong>[Smart Appointment & Booking Pro](https://store.zealousweb.com/wordpress-plugins/smart-appointment-booking-pro)</strong>
+* <strong>[Smart Showcase for Google Reviews Pro](https://store.zealousweb.com/wordpress-plugins/smart-showcase-for-google-reviews-pro)</strong>
+* <strong>[User Registration Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/user-registration-using-contact-form-7-pro)</strong>
 
 == Plugin Requirement ==
 
@@ -104,10 +120,11 @@ Yes, as same as using show another page using shortcode you can use same on emai
 
 == Changelog ==
 
+= 3.0 =
+* Minor changes - Doc update
+
 = 2.9 =
 * Minor adjustments
-
-== Changelog ==
 
 = 2.8 =
 * Minor adjustments regarding workflow
