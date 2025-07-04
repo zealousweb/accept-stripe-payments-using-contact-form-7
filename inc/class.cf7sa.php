@@ -84,7 +84,6 @@ if ( !class_exists( 'CF7SA' ) ) {
 		 */
 		function action__init() {
 
-			add_rewrite_rule( '^cf7sa-phpinfo(/(.*))?/?$', 'index.php?cf7sa-phpinfo=$matches[2]', 'top' );
 			add_rewrite_rule( '^cf7sa-webhook(/(.*))?/?$', 'index.php?cf7sa-webhook=$matches[2]', 'top' );
 			flush_rewrite_rules();
 

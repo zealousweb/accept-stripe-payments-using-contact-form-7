@@ -22,7 +22,7 @@ if ( !class_exists( 'CF7SA_Front' ) ) {
 		/**
 		 * @var string Base URL endpoint for pages.
 		 */
-		const BASE_ENDPOINT = 'cf7sa-phpinfo';
+		
 		const WEBHOOK_ENDPOINT = 'cf7sa-webhook';
 
 		var $action = null,
@@ -64,7 +64,6 @@ if ( !class_exists( 'CF7SA_Front' ) ) {
 		 * @return array
 		 */
 		function filter__query_vars( $vars ) {
-			$vars[] = $this::BASE_ENDPOINT;
 			$vars[] = $this::WEBHOOK_ENDPOINT;
 			return $vars;
 		}
