@@ -52,7 +52,7 @@ if ( !class_exists( 'CF7SA_Admin_Filter' ) ) {
 		public function filter__wpcf7_editor_panels( $panels ) {
 
 			$panels[ 'stripe-add-on' ] = array(
-				'title'    => __( 'Stripe', 'contact-form-7-stripe-addon' ),
+				'title'    => __( 'Stripe', 'accept-stripe-payments-using-contact-form-7' ),
 				'callback' => array( $this, 'wpcf7_admin_after_additional_settings' )
 			);
 
@@ -111,10 +111,10 @@ if ( !class_exists( 'CF7SA_Admin_Filter' ) ) {
 		 */
 		function filter__manage_cf7sa_data_posts_columns( $columns ) {
 			unset( $columns['date'] );
-			$columns['form_id'] = __( 'Form ID', 'contact-form-7-stripe-addon' );
-			$columns['transaction_status'] = __( 'Transaction Status', 'contact-form-7-stripe-addon' );
-			$columns['total'] = __( 'Total Amount', 'contact-form-7-stripe-addon' );
-			$columns['date'] = __( 'Submitted Date', 'contact-form-7-stripe-addon' );
+			$columns['form_id'] = __( 'Form ID', 'accept-stripe-payments-using-contact-form-7' );
+			$columns['transaction_status'] = __( 'Transaction Status', 'accept-stripe-payments-using-contact-form-7' );
+			$columns['total'] = __( 'Total Amount', 'accept-stripe-payments-using-contact-form-7' );
+			$columns['date'] = __( 'Submitted Date', 'accept-stripe-payments-using-contact-form-7' );
 			return $columns;
 		}
 
@@ -169,8 +169,8 @@ if ( !class_exists( 'CF7SA_Admin_Filter' ) ) {
                 return $links;
             }
 			// Add your donation link
-			$documentLink = '<a target="_blank" href="https://store.zealousweb.com/accept-stripe-payments-using-contact-form-7-pro">' . __( 'Document Link', 'contact-form-7-stripe-addon' ) . '</a>';
-			$donateLink = '<a target="_blank" href="http://www.zealousweb.com/payment/">' . __( 'Donate', 'contact-form-7-stripe-addon' ) . '</a>';
+			$documentLink = '<a target="_blank" href="https://store.zealousweb.com/accept-stripe-payments-using-contact-form-7-pro">' . __( 'Document Link', 'accept-stripe-payments-using-contact-form-7' ) . '</a>';
+			$donateLink = '<a target="_blank" href="http://www.zealousweb.com/payment/">' . __( 'Donate', 'accept-stripe-payments-using-contact-form-7' ) . '</a>';
             array_unshift( $links ,$documentLink,$donateLink);
         
             return $links;

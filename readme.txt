@@ -4,13 +4,13 @@ Contributors: zealopensource
 Tags: donation, payment, payments, stripe, online payment
 Donate link: http://www.zealousweb.com/payment/
 Requires at least: 4.9
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 5.6
-License: GPLv3 or later License
+License: GPLv3
 CF7 requires at least: 3.0
 CF7 tested up to: 5.8
-Stable tag: 3.1
-Version: 3.1
+Stable tag: 3.2
+Version: 3.2
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Contact Form 7 - Integrate Stripe payment gateway for making your payments through Contact Form 7. 
@@ -92,7 +92,7 @@ Installing the plugin is easy. Just follow these steps:
 
 1. From the dashboard of your site, navigate to Plugins --> Add New.
 2. Select the Upload option and hit "Choose File."
-3. When the popup appears, select the contact-form-7-stripe-addon.zip file from your desktop.
+3. When the popup appears, select the accept-stripe-payments-using-contact-form-7.zip file from your desktop.
 4. Follow the on-screen instructions and wait till the upload completes.
 5. When it's finished, activate the plugin via the prompt. A message will display confirming activation was successful.
 
@@ -131,6 +131,9 @@ Yes, as same as using show another page using shortcode you can use same on emai
 7. Enable the Postal Code / Zip Code field on the Card and Payment Successful Message dynamic for admin
 
 == Changelog ==
+
+= 3.2 =
+* Resolved : Responsible Disclosure for Security Issue in Your Product: Accept Stripe Payments Using Contact Form 7
 
 = 3.1 =
 * Security Update.

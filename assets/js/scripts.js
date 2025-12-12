@@ -153,6 +153,8 @@ function setCookie(cname, cvalue, exdays) {
                   }
                   e.preventDefault();
                   var formData = new FormData($form.get(0));
+                  // Security: Add nonce for CSRF protection
+                  formData.append('_wpcf7_nonce', cf7sa_object.nonce);
                   var $message = $('.wpcf7-response-output', $form);
                   var form_id = wpcf7_cf7sa.getId($form);
                   var intentresponse = "";

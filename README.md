@@ -36,7 +36,7 @@ Installing the plugin is easy. Just follow these steps:
 
 - From the dashboard of your site, navigate to Plugins –> Add New.
 - Select the Upload option and hit “Choose File.”
--  When the popup appears, select the contact-form-7-stripe-addon.zip file from your desktop.
+-  When the popup appears, select the accept-stripe-payments-using-contact-form-7.zip file from your desktop.
 - Follow the on-screen instructions and wait till the upload completes.
 - When it’s finished, activate the plugin via the prompt. A message will display confirming activation was successful.
 

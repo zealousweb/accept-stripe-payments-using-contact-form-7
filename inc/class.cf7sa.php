@@ -73,7 +73,7 @@ if ( !class_exists( 'CF7SA' ) ) {
 			$tag_generator = WPCF7_TagGenerator::get_instance();
 			$tag_generator->add(
 				'stripe',
-				__( 'Stripe', 'contact-form-7-stripe-addon' ),
+				__( 'Stripe', 'accept-stripe-payments-using-contact-form-7' ),
 				array( $this, 'wpcf7_tag_generator_stripe_net' )
 			);
 		}
@@ -87,46 +87,31 @@ if ( !class_exists( 'CF7SA' ) ) {
 			add_rewrite_rule( '^cf7sa-webhook(/(.*))?/?$', 'index.php?cf7sa-webhook=$matches[2]', 'top' );
 			flush_rewrite_rules();
 
-			global $wp_version;
-
-			// Set filter for plugin's languages directory
-			$cf7sa_lang_dir = dirname( CF7SA_PLUGIN_BASENAME ) . '/languages/';
-			$cf7sa_lang_dir = apply_filters( 'cf7sa_languages_directory', $cf7sa_lang_dir );
-
-			// Traditional WordPress plugin locale filter.
-			$get_locale = get_locale();
-
-			if ( $wp_version >= 4.7 ) {
-				$get_locale = get_user_locale();
-			}
-
-			// Traditional WordPress plugin locale filter
-			$locale = apply_filters( 'plugin_locale',  $get_locale, 'contact-form-7-stripe-addon' );
-			$mofile = sprintf( '%1$s-%2$s.mo', 'contact-form-7-stripe-addon', $locale );
-
-			// Setup paths to current locale file
-			$mofile_global = WP_LANG_DIR . '/plugins/' . basename( CF7SA_DIR ) . '/' . $mofile;
+			// Since WordPress 4.6, translations are automatically loaded from WordPress.org
+			// This custom loading is only needed for custom translation files in wp-content/languages/plugins/
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- 'plugin_locale' is a WordPress core filter
+			$locale = apply_filters( 'plugin_locale', determine_locale(), 'accept-stripe-payments-using-contact-form-7' );
+			$mofile = sprintf( '%1$s-%2$s.mo', 'accept-stripe-payments-using-contact-form-7', $locale );
+			$mofile_global = WP_LANG_DIR . '/plugins/' . $mofile;
 
 			if ( file_exists( $mofile_global ) ) {
-				// Look in global /wp-content/languages/plugin-name folder
-				load_textdomain( 'contact-form-7-stripe-addon', $mofile_global );
-			} else {
-				// Load the default language files
-				load_plugin_textdomain( 'contact-form-7-stripe-addon', false, $cf7sa_lang_dir );
+				// Load custom translation file if it exists in global languages folder
+				load_textdomain( 'accept-stripe-payments-using-contact-form-7', $mofile_global );
 			}
+			// Note: WordPress automatically loads translations from WordPress.org for plugins
 
 			/**
 			 * Post Type: Stripe Add-on.
 			 */
 
 			$labels = array(
-				'name'          => __( 'Stripe Add-on', 'contact-form-7-stripe-addon' ),
-				'singular_name' => __( 'Stripe Add-on', 'contact-form-7-stripe-addon' ),
-				'not_found'     => __( 'No Transactions Found.', 'contact-form-7-stripe-addon' ),
+				'name'          => __( 'Stripe Add-on', 'accept-stripe-payments-using-contact-form-7' ),
+				'singular_name' => __( 'Stripe Add-on', 'accept-stripe-payments-using-contact-form-7' ),
+				'not_found'     => __( 'No Transactions Found.', 'accept-stripe-payments-using-contact-form-7' ),
 			);
 
 			$args = array(
-				'label' => __( 'Stripe Add-on', 'contact-form-7-stripe-addon' ),
+				'label' => __( 'Stripe Add-on', 'accept-stripe-payments-using-contact-form-7' ),
 				'labels' => $labels,
 				'description' => '',
 				'public' => false,
@@ -156,15 +141,21 @@ if ( !class_exists( 'CF7SA' ) ) {
 		}
 
 		function action__admin_notices_deactive() {
-			echo '<div class="error">' .
-				'<p>' .
-					sprintf(
-						/* translators: Contact Form 7 - Stripe Add-on */
-						__( '<p><strong><a href="https://wordpress.org/plugins/contact-form-7/" target="_blank">Contact Form 7</a></strong> is required to use <strong>%s</strong>.</p>', 'contact-form-7-stripe-addon' ),
-						'Contact Form 7 - Stripe Add-on'
-					) .
-				'</p>' .
-			'</div>';
+			$allowed_html = array(
+				'strong' => array(),
+				'a' => array( 'href' => array(), 'target' => array() )
+			);
+			echo '<div class="error"><p>';
+			echo wp_kses(
+				sprintf(
+					/* translators: 1: Link to Contact Form 7 plugin, 2: Plugin name */
+					__( '%1$s is required to use %2$s.', 'accept-stripe-payments-using-contact-form-7' ),
+					'<strong><a href="https://wordpress.org/plugins/contact-form-7/" target="_blank">' . __( 'Contact Form 7', 'accept-stripe-payments-using-contact-form-7' ) . '</a></strong>',
+					'<strong>' . __( 'Contact Form 7 - Stripe Add-on', 'accept-stripe-payments-using-contact-form-7' ) . '</strong>'
+				),
+				$allowed_html
+			);
+			echo '</p></div>';
 		}
 
 		/*
@@ -202,7 +193,7 @@ if ( !class_exists( 'CF7SA' ) ) {
 			$args = wp_parse_args( $args, array() );
 			$type = $args['id'];
 
-			$description = __( "Generate a form-tag for to display Stripe payment form", 'contact-form-7' );
+			$description = __( 'Generate a form-tag to display Stripe payment form', 'accept-stripe-payments-using-contact-form-7' );
 			?>
 			<div class="control-box">
 				<fieldset>
@@ -211,15 +202,15 @@ if ( !class_exists( 'CF7SA' ) ) {
 					<table class="form-table">
 						<tbody>
 							<tr>
-							<th scope="row"><label for="<?php echo esc_attr( $args['content'] . '-name' ); ?>"><?php echo esc_html( __( 'Name', 'contact-form-7' ) ); ?></label></th>
+							<th scope="row"><label for="<?php echo esc_attr( $args['content'] . '-name' ); ?>"><?php echo esc_html__( 'Name', 'accept-stripe-payments-using-contact-form-7' ); ?></label></th>
 							<td>
 								<legend class="screen-reader-text"><input type="checkbox" name="required" value="on" checked="checked" /></legend>
 								<input type="text" name="name" class="tg-name oneline" id="<?php echo esc_attr( $args['content'] . '-name' ); ?>" /></td>
 							</tr>
 
 							<tr>
-								<th scope="row"><label for="<?php echo esc_attr( $args['content'] . '-values' ); ?>"><?php echo esc_html( __( 'Button Name', 'contact-form-7-stripe-addon' ) ); ?></label></th>
-								<td><input type="text" name="values" class="oneline" id="<?php echo esc_attr( $args['content'] . '-values' ); ?>" value="<?php _e( 'Make Payment', 'contact-form-7-stripe-addon' ) ?>" /></td>
+								<th scope="row"><label for="<?php echo esc_attr( $args['content'] . '-values' ); ?>"><?php esc_html_e( 'Button Name', 'accept-stripe-payments-using-contact-form-7' ); ?></label></th>
+								<td><input type="text" name="values" class="oneline" id="<?php echo esc_attr( $args['content'] . '-values' ); ?>" value="<?php esc_attr_e( 'Make Payment', 'accept-stripe-payments-using-contact-form-7' ); ?>" /></td>
 							</tr>
 
 						</tbody>
@@ -228,17 +219,20 @@ if ( !class_exists( 'CF7SA' ) ) {
 			</div>
 
 			<div class="insert-box">
-				<input type="text" name="<?php echo $type; ?>" class="tag code" readonly="readonly" onfocus="this.select()" />
+				<input type="text" name="<?php echo esc_attr( $type ); ?>" class="tag code" readonly="readonly" onfocus="this.select()" />
 
 				<div class="submitbox">
-					<input type="button" class="button button-primary insert-tag" value="<?php echo esc_attr( __( 'Insert Tag', 'contact-form-7' ) ); ?>" />
+					<input type="button" class="button button-primary insert-tag" value="<?php echo esc_attr__( 'Insert Tag', 'accept-stripe-payments-using-contact-form-7' ); ?>" />
 				</div>
 
 				<br class="clear" />
 
 				<p class="description mail-tag">
 					<label for="<?php echo esc_attr( $args['content'] . '-mailtag' ); ?>">
-						<?php echo sprintf( esc_html( __( "To use the value input through this field in a mail field, you need to insert the corresponding mail-tag (%s) into the field on the Mail tab.", 'contact-form-7' ) ), '<strong><span class="mail-tag"></span></strong>' ); ?><input type="text" class="mail-tag code hidden" readonly="readonly" id="<?php echo esc_attr( $args['content'] . '-mailtag' ); ?>" />
+						<?php
+						/* translators: %s: mail-tag placeholder */
+						printf( esc_html__( 'To use the value input through this field in a mail field, you need to insert the corresponding mail-tag (%s) into the field on the Mail tab.', 'accept-stripe-payments-using-contact-form-7' ), '<strong><span class="mail-tag"></span></strong>' );
+						?><input type="text" class="mail-tag code hidden" readonly="readonly" id="<?php echo esc_attr( $args['content'] . '-mailtag' ); ?>" />
 					</label>
 				</p>
 			</div>

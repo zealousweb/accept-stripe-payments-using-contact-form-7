@@ -37,6 +37,7 @@ if ( !class_exists( 'CF7SA_Front_Action' ) ){
 
 		function action__wp_enqueue_scripts() {
 
+			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required to find forms with Stripe enabled
 			$get_posts = get_posts(
 				array(
 					'post_type'   => 'wpcf7_contact_form',
@@ -46,6 +47,7 @@ if ( !class_exists( 'CF7SA_Front_Action' ) ){
 					'fields'      => 'ids',
 				)
 			);
+			// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
 			$stripe_api = array();
 			$stripe_api_style = array();
@@ -86,11 +88,12 @@ if ( !class_exists( 'CF7SA_Front_Action' ) ){
 					'cf7sa_stripe' => $stripe_api,
 					'cf7sa_stripe_style' => $stripe_api_style,
 					'enablePostalCode' => $enable_postal_code,
+					'nonce' => wp_create_nonce( 'cf7sa_stripe_intent' ), // Security: CSRF nonce for AJAX
 				)
 			);
 
 			if ( !empty( $get_posts ) ) {
-				wp_enqueue_script( CF7SA_PREFIX . '_stripe', 'https://js.stripe.com/v3/', array( 'jquery-core', 'contact-form-7', CF7SA_PREFIX . '_front_js' ), '3' );
+				wp_enqueue_script( CF7SA_PREFIX . '_stripe', 'https://js.stripe.com/v3/', array( 'jquery-core', 'contact-form-7', CF7SA_PREFIX . '_front_js' ), '3', true );
 			}
 
 			/**

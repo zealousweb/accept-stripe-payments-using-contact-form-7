@@ -94,12 +94,22 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 
 			require_once( CF7SA_DIR . '/inc/lib/init.php' );
 
-			if ( $_POST ) {
-				// CF7 posted data
-				$posted_data = $_POST;
+			// Security: Verify nonce for CSRF protection
+			if ( ! isset( $_POST['_wpcf7_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpcf7_nonce'] ) ), 'cf7sa_stripe_intent' ) ) {
+				// Fallback: Check CF7's own nonce if our custom nonce is not present
+				$cf7_nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
+				if ( empty( $cf7_nonce ) || ! wp_verify_nonce( $cf7_nonce, 'wp_rest' ) ) {
+					wp_send_json_error( array( 'message' => __( 'Security check failed.', 'accept-stripe-payments-using-contact-form-7' ) ), 403 );
+					exit;
+				}
 			}
 
-			$form_ID = $_POST['_wpcf7'];
+			if ( $_POST ) {
+				// CF7 posted data - sanitize the array
+				$posted_data = array_map( 'sanitize_text_field', wp_unslash( $_POST ) );
+			}
+
+			$form_ID = isset( $_POST['_wpcf7'] ) ? absint( $_POST['_wpcf7'] ) : 0;
 
 			if ( !empty( $form_ID ) ) {
 
@@ -179,13 +189,13 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 
 					if ( empty( $amountPayable ) ) {
 						add_filter( 'wpcf7_skip_mail', array( $this, 'filter__wpcf7_skip_mail' ), 20 );
-						$_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $form_ID ] = __( 'Empty Amount field or Invalid configuration.', CF7SA_PREFIX );
+						$_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $form_ID ] = __( 'Empty Amount field or Invalid configuration.', 'accept-stripe-payments-using-contact-form-7' );
 						return;
 					}
 
 					if ( $amountPayable < 0 && $amountPayable != 0 )  {
 						add_filter( 'wpcf7_skip_mail', array( $this, 'filter__wpcf7_skip_mail' ), 20 );
-						$_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $form_ID ] = __( 'Please enter the valid amount.', CF7SA_PREFIX );
+						$_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $form_ID ] = __( 'Please enter the valid amount.', 'accept-stripe-payments-using-contact-form-7' );
 						return;
 					}
 
@@ -304,7 +314,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 					}
 			}
 
-			echo $client_secret;
+			echo esc_html( $client_secret );
 			die();
 		}
 
@@ -326,12 +336,16 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 			$form_instance = WPCF7_ContactForm::get_instance( $form_ID ); // CF7 From Instance
 
 			if ( $submission ) {
-
+				// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified by Contact Form 7
 				if ( $_POST ) {
-					// CF7 posted data
-					$posted_data = $_POST;
+					// CF7 posted data - use submission data which is already processed by CF7
+					$posted_data = $submission->get_posted_data();
+					// Merge with raw POST for stripe-specific fields
+					if ( isset( $_POST['stripeClientSecret'] ) ) {
+						$posted_data['stripeClientSecret'] = sanitize_text_field( wp_unslash( $_POST['stripeClientSecret'] ) );
+					}
 				}
-
+				// phpcs:enable WordPress.Security.NonceVerification.Missing
 			}
 
 			if ( !empty( $form_ID ) ) {
@@ -401,7 +415,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 
 				if ( empty( $amountPayable ) ) {
 					add_filter( 'wpcf7_skip_mail', array( $this, 'filter__wpcf7_skip_mail' ), 20 );
-					$_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $form_ID ] = __( 'Empty Amount field or Invalid configuration.', CF7SA_PREFIX );
+					$_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $form_ID ] = __( 'Empty Amount field or Invalid configuration.', 'accept-stripe-payments-using-contact-form-7' );
 					return;
 				}
 
@@ -410,7 +424,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 					&& $amountPayable != 0
 				)  {
 					add_filter( 'wpcf7_skip_mail', array( $this, 'filter__wpcf7_skip_mail' ), 20 );
-					$_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $form_ID ] = __( 'Please enter the valid amount.', CF7SA_PREFIX );
+					$_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $form_ID ] = __( 'Please enter the valid amount.', 'accept-stripe-payments-using-contact-form-7' );
 					return;
 				}
 
@@ -544,18 +558,19 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 						) {
 							$payment_success_msg = get_post_meta($form_ID, CF7SA_META_PREFIX . 'payment-success-msg', true);
 
-							$payment_success_msg_cf7 = !empty($payment_success_msg) ? $payment_success_msg : 'Transaction is Successfully Completed.';
+							// Use custom message if set, otherwise use translatable default
+							$payment_success_msg_cf7 = !empty($payment_success_msg) ? $payment_success_msg : __( 'Transaction is Successfully Completed.', 'accept-stripe-payments-using-contact-form-7' );
 
-							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( __( $payment_success_msg_cf7, CF7SA_PREFIX ) );
+							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( $payment_success_msg_cf7 );
 						} else if ( $payment_status == 'pending' ) {
-							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( __( 'Transaction is in pending.', CF7SA_PREFIX ) );
+							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( __( 'Transaction is in pending.', 'accept-stripe-payments-using-contact-form-7' ) );
 						} else {
 
 							add_filter( 'wpcf7_skip_mail', array( $this, 'filter__wpcf7_skip_mail' ), 20 );
 							$wpcf7_submission->set_status( 'mail_failed' );
 							$wpcf7_submission->set_response( $contact_form->message( 'mail_sent_ng' ) );
 
-							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize(  __( 'Transaction is failed...', CF7SA_PREFIX ) );
+							$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( __( 'Transaction is failed...', 'accept-stripe-payments-using-contact-form-7' ) );
 						}
 
 						if ( !empty( $success_returnURL ) && $success_returnURL != "Select page" ) {
@@ -572,7 +587,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 							$_SESSION[ CF7SA_META_PREFIX . 'return_url' . $form_ID ] = $redirect_url;
 
 							if ( !$submission->is_restful() ) {
-								wp_redirect( $redirect_url );
+								wp_safe_redirect( $redirect_url );
 								exit;
 							}
 						} else {
@@ -586,7 +601,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 						$wpcf7_submission->set_status( 'mail_failed' );
 						$wpcf7_submission->set_response( $contact_form->message( 'mail_sent_ng' ) );
 
-						$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize(  __( 'Transaction is failed..', CF7SA_PREFIX ) );
+						$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( __( 'Transaction is failed.', 'accept-stripe-payments-using-contact-form-7' ) );
 						$_SESSION[ CF7SA_META_PREFIX . 'failed' . $form_ID ] = true;
 					}
 
@@ -595,7 +610,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 					$wpcf7_submission->set_status( 'mail_failed' );
 					$wpcf7_submission->set_response( $contact_form->message( 'mail_sent_ng' ) );
 
-					$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize(  __( 'Transaction is failed. Please configure plugin properly as show in document.', CF7SA_PREFIX ) );
+					$_SESSION[ CF7SA_META_PREFIX . 'form_message' . $form_ID ] = serialize( __( 'Transaction is failed. Please configure plugin properly as shown in documentation.', 'accept-stripe-payments-using-contact-form-7' ) );
 					$_SESSION[ CF7SA_META_PREFIX . 'failed' . $form_ID ] = true;
 				}
 
@@ -678,20 +693,23 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 
 		function shortcode__stripe_details() {
 
-			$form_id = (int)( isset( $_REQUEST['form'] ) ? $_REQUEST['form'] : '' );
-			$txn_id = ( isset( $_REQUEST['txn_id'] ) ? $_REQUEST['txn_id'] : '' );
-			$invoice_no = ( isset( $_REQUEST['invoice'] ) ? $_REQUEST['invoice'] : '' );
-			$failure_code = ( isset( $_REQUEST['failure_code'] ) ? $_REQUEST['failure_code'] : '' );
-			$failure_message = ( isset( $_REQUEST['failure_message'] ) ? $_REQUEST['failure_message'] : '' );
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Shortcode reads URL params, no data modification
+			// Security: Sanitize all input parameters
+			$form_id = isset( $_REQUEST['form'] ) ? absint( $_REQUEST['form'] ) : 0;
+			$txn_id = isset( $_REQUEST['txn_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['txn_id'] ) ) : '';
+			$invoice_no = isset( $_REQUEST['invoice'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['invoice'] ) ) : '';
+			$failure_code = isset( $_REQUEST['failure_code'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['failure_code'] ) ) : '';
+			$failure_message = isset( $_REQUEST['failure_message'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['failure_message'] ) ) : '';
+			// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 			if (
 				!empty( $failure_code )
 				|| !empty( $failure_message )
 			)
 				return '<p style="color: #f00">' .
-					__( 'Something goes wrong! Please try again.', 'contact-form-7-stripe-addon' ) .
+					esc_html__( 'Something goes wrong! Please try again.', 'accept-stripe-payments-using-contact-form-7' ) .
 					'<br/>' .
-					$charge->failure_code . ": " . $failure_message .
+					esc_html( $failure_code ) . ": " . esc_html( $failure_message ) .
 				'</p>';
 
 			if (
@@ -700,14 +718,14 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				&& !empty( $failure_code )
 			) {
 				return '<p style="color: #f00">' .
-					__( 'Something goes wrong! Please try again.', 'contact-form-7-stripe-addon' ) .
+					__( 'Something goes wrong! Please try again.', 'accept-stripe-payments-using-contact-form-7' ) .
 				'</p>';
 			}
 
 			$use_stripe           = get_post_meta($form_id, CF7SA_META_PREFIX . 'use_stripe', true);
 
 			if ( empty( $use_stripe ) )
-				return '<p style="color: #f00">' . __( 'Something goes wrong! Please try again.', 'contact-form-7-stripe-addon' ) . '</p>';
+				return '<p style="color: #f00">' . __( 'Something goes wrong! Please try again.', 'accept-stripe-payments-using-contact-form-7' ) . '</p>';
 
 			ob_start();
 
@@ -730,32 +748,32 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				//If the charge fails (payment unsuccessful), this code will get triggered.
 				if ( ! empty( $retrieve_charge->failure_code ) ) {
 
-					return '<p style="color: #f00">' . $retrieve_charge->failure_code . ": " . $retrieve_charge->failure_message . '</p>';
+					return '<p style="color: #f00">' . esc_html( $retrieve_charge->failure_code ) . ": " . esc_html( $retrieve_charge->failure_message ) . '</p>';
 
 				} else {
 
-					return '<p style="color: #f00">' . $e->getMessage() . '</p>';
+					return '<p style="color: #f00">' . esc_html( $e->getMessage() ) . '</p>';
 				}
 			}
 
 			echo '<table class="cf7sa-transaction-details" align="left">' .
 				'<tr>'.
-					'<th align="left">' . __( 'Transaction Amount :', 'contact-form-7-stripe-addon' ) . '</th>'.
-					'<td align="left">' . ( $retrieve_charge->amount / 100 ) . ' ' . $retrieve_charge->currency . '</td>'.
+					'<th align="left">' . esc_html__( 'Transaction Amount :', 'accept-stripe-payments-using-contact-form-7' ) . '</th>'.
+					'<td align="left">' . esc_html( $retrieve_charge->amount / 100 ) . ' ' . esc_html( strtoupper( $retrieve_charge->currency ) ) . '</td>'.
 				'</tr>' .
 				'<tr>'.
-					'<th align="left">' . __( 'Payment Status :', 'contact-form-7-stripe-addon' ) . '</th>'.
-					'<td align="left">' . $retrieve_charge->status . '</td>'.
+					'<th align="left">' . esc_html__( 'Payment Status :', 'accept-stripe-payments-using-contact-form-7' ) . '</th>'.
+					'<td align="left">' . esc_html( $retrieve_charge->status ) . '</td>'.
 				'</tr>' .
 				'<tr>'.
-					'<th align="left">' . __( 'Transaction Id :', 'contact-form-7-stripe-addon' ) . '</th>'.
-					'<td align="left">' . $retrieve_charge->balance_transaction . '</td>'.
+					'<th align="left">' . esc_html__( 'Transaction Id :', 'accept-stripe-payments-using-contact-form-7' ) . '</th>'.
+					'<td align="left">' . esc_html( $retrieve_charge->balance_transaction ) . '</td>'.
 				'</tr>' .
 				(
 					!empty( $retrieve_charge->card->type )
 					? '<tr>'.
-						'<th align="left">' . __( 'Card Type :', 'contact-form-7-stripe-addon' ) . '</th>'.
-						'<td align="left">' . $retrieve_charge->card->type . '</td>'.
+						'<th align="left">' . esc_html__( 'Card Type :', 'accept-stripe-payments-using-contact-form-7' ) . '</th>'.
+						'<td align="left">' . esc_html( $retrieve_charge->card->type ) . '</td>'.
 					'</tr>'
 					: ''
 				) .
@@ -781,24 +799,31 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				array_key_exists( 'contact_form_id', $result )
 				&& array_key_exists( 'status', $result )
 				&& !empty( $result['contact_form_id'] )
-				&& !empty( $_SESSION[ CF7SA_META_PREFIX . 'form_message' . $result['contact_form_id'] ] )
 				&& $result[ 'status' ] == 'mail_sent'
 			) {
+				$session_key = CF7SA_META_PREFIX . 'form_message' . $result['contact_form_id'];
+				if ( isset( $_SESSION[ $session_key ] ) && ! empty( $_SESSION[ $session_key ] ) ) {
+					$tmp = $response['message'];
+					// Security: Sanitize session data before use
+					// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized via maybe_unserialize and sanitize_text_field below
+					$raw_session_value = $_SESSION[ $session_key ];
+					$session_message = sanitize_text_field( maybe_unserialize( $raw_session_value ) );
+					$response[ 'message' ] = $session_message;
+					unset( $_SESSION[ $session_key ] );
 
-				$tmp                 = $response['message'];
-				$response[ 'message' ] = unserialize( $_SESSION[ CF7SA_META_PREFIX . 'form_message' . $result[ 'contact_form_id' ] ] );
-				unset( $_SESSION[ CF7SA_META_PREFIX . 'form_message' . $result[ 'contact_form_id' ] ] );
+					$return_url_key = CF7SA_META_PREFIX . 'return_url' . $result[ 'contact_form_id' ];
+					if ( isset( $_SESSION[ $return_url_key ] ) ) {
+						$response[ 'redirection_url' ] = esc_url_raw( $_SESSION[ $return_url_key ] );
+						unset( $_SESSION[ $return_url_key ] );
+					}
 
-				if ( isset( $_SESSION[ CF7SA_META_PREFIX . 'return_url' . $result[ 'contact_form_id' ] ] ) ) {
-					$response[ 'redirection_url' ] = $_SESSION[ CF7SA_META_PREFIX . 'return_url' . $result[ 'contact_form_id' ] ];
-					unset( $_SESSION[ CF7SA_META_PREFIX . 'return_url' . $result[ 'contact_form_id' ] ] );
-				}
-
-				if ( !empty( $_SESSION[ CF7SA_META_PREFIX . 'failed' . $result[ 'contact_form_id' ] ] ) ) {
-					$response[ 'status' ] = 'mail_failed';
-					unset( $_SESSION[ CF7SA_META_PREFIX . 'failed' . $result[ 'contact_form_id' ] ] );
-				} else {
-					$response[ 'message' ] = $response[ 'message' ] . ' ' . $tmp;
+					$failed_key = CF7SA_META_PREFIX . 'failed' . $result[ 'contact_form_id' ];
+					if ( isset( $_SESSION[ $failed_key ] ) && ! empty( $_SESSION[ $failed_key ] ) ) {
+						$response[ 'status' ] = 'mail_failed';
+						unset( $_SESSION[ $failed_key ] );
+					} else {
+						$response[ 'message' ] = $response[ 'message' ] . ' ' . $tmp;
+					}
 				}
 
 			}
@@ -806,14 +831,15 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 			if (
 				array_key_exists( 'contact_form_id', $result )
 				&& array_key_exists( 'status', $result )
-				&& !empty( $result[ 'contact_form_id' ] )
-				&& !empty( $_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $result[ 'contact_form_id' ] ] )
+				&& ! empty( $result[ 'contact_form_id' ] )
 				&& $result[ 'status' ] == 'mail_sent'
 			) {
-
-				$response[ 'message' ] = $_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $result[ 'contact_form_id' ] ];
-				$response[ 'status' ]  = 'mail_failed';
-				unset( $_SESSION[ CF7SA_META_PREFIX . 'amount_error' . $result[ 'contact_form_id' ] ] );
+				$amount_error_key = CF7SA_META_PREFIX . 'amount_error' . $result[ 'contact_form_id' ];
+				if ( isset( $_SESSION[ $amount_error_key ] ) && ! empty( $_SESSION[ $amount_error_key ] ) ) {
+					$response[ 'message' ] = sanitize_text_field( $_SESSION[ $amount_error_key ] );
+					$response[ 'status' ]  = 'mail_failed';
+					unset( $_SESSION[ $amount_error_key ] );
+				}
 			}
 
 			return $response;
@@ -844,13 +870,14 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		 */
 		function wpcf7_stripe_validation_filter( $result, $tag ) {
 
-			$stripe = isset( $_POST[ 'stripeClientSecret' ] ) ? $_POST[ 'stripeClientSecret' ] : '';
+			// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified by Contact Form 7
+			// Security: Sanitize input data
+			$stripe = isset( $_POST[ 'stripeClientSecret' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'stripeClientSecret' ] ) ) : '';
 
-			$id = isset( $_POST[ '_wpcf7' ] ) ? $_POST[ '_wpcf7' ] : '';
+			$id = isset( $_POST[ '_wpcf7' ] ) ? absint( $_POST[ '_wpcf7' ] ) : 0;
+			// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-			if ( !empty( $id ) ) {
-				$id = ( int ) $_POST[ '_wpcf7' ];
-			} else {
+			if ( empty( $id ) ) {
 				return $result;
 			}
 
@@ -980,16 +1007,16 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 									sprintf(
 										'<span class="credit_card_details wpcf7-form-control-wrap %1$s">%2$s%3$s</span>',
 										sanitize_html_class( $tag->name ),
-										'<label for="card-element-' . esc_attr( $form_id ) . '">' . __('Credit or Debit card', 'contact-form-7-stripe-addon').'</label>
+										'<label for="card-element-' . esc_attr( $form_id ) . '">' . esc_html__( 'Credit or Debit card', 'accept-stripe-payments-using-contact-form-7' ) . '</label>
 										<div id="card-element-' . esc_attr( $form_id ) . '">
 											<!-- a Stripe Element will be inserted here. -->
 										</div>' .
 										'<input type="hidden" name="stripeToken" value="" />' .
 										'<input type="hidden" name="stripeClientSecret" value="" />' .
 										'<input type="hidden" name="action" value="get_stripe_intent" />' .
-										'<noscript>' . __( 'Stripe Payments requires Javascript to be supported by the browser in order to operate.', 'contact-form-7-stripe-addon' ) . '</noscript>',
+										'<noscript>' . esc_html__( 'Stripe Payments requires Javascript to be supported by the browser in order to operate.', 'accept-stripe-payments-using-contact-form-7' ) . '</noscript>',
 										'<span id="card-errors-' . esc_attr( $form_id ) . '" class="wpcf7-not-valid-tip"></span>' .
-										$validation_error
+										wp_kses_post( $validation_error )
 									) .
 								'</div>';
 						}
@@ -1021,18 +1048,18 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 			if ( !empty( $enable_test_mode ) ) {
 
 				if ( empty( $test_publishable_key ) )
-					return __( 'Please enter Test Publishable Key.', 'contact-form-7-stripe-addon' );
+					return __( 'Please enter Test Publishable Key.', 'accept-stripe-payments-using-contact-form-7' );
 
 				if ( empty( $test_secret_key ) )
-					return __( 'Please enter Test Secret Key.', 'contact-form-7-stripe-addon' );
+					return __( 'Please enter Test Secret Key.', 'accept-stripe-payments-using-contact-form-7' );
 
 			} else {
 
 				if ( empty( $live_publishable_key ) )
-					return __( 'Please enter Live Publishable Key.', 'contact-form-7-stripe-addon' );
+					return __( 'Please enter Live Publishable Key.', 'accept-stripe-payments-using-contact-form-7' );
 
 				if ( empty( $live_secret_key ) )
-					return __( 'Please enter Live Secret Key.', 'contact-form-7-stripe-addon' );
+					return __( 'Please enter Live Secret Key.', 'accept-stripe-payments-using-contact-form-7' );
 
 			}
 			return false;
@@ -1041,20 +1068,24 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		/**
 		 * Function: getUserIpAddr
 		 *
+		 * Security: This function now only uses REMOTE_ADDR which cannot be spoofed.
+		 * HTTP_CLIENT_IP and HTTP_X_FORWARDED_FOR can be spoofed by attackers.
+		 * If you're behind a trusted proxy/load balancer, you should configure 
+		 * the server to properly set REMOTE_ADDR or use a trusted proxy solution.
+		 *
 		 * @method getUserIpAddr
 		 *
 		 * @return string
 		 */
 		function getUserIpAddr() {
+			// Security: Only use REMOTE_ADDR as other headers can be spoofed
 			$ip = '';
-			if ( !empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-				//ip from share internet
-				$ip = $_SERVER['HTTP_CLIENT_IP'];
-			} else if ( !empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-				//ip pass from proxy
-				$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-			} else {
-				$ip = $_SERVER['REMOTE_ADDR'];
+			if ( isset( $_SERVER['REMOTE_ADDR'] ) ) {
+				$ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+				// Validate IP address format
+				if ( ! filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+					$ip = '';
+				}
 			}
 			return $ip;
 		}
@@ -1072,8 +1103,8 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 			$upload_dir = $upload['basedir'];
 			$cf7sa_upload_dir = $upload_dir . '/cf7sa-uploaded-files';
 
-			if ( !is_dir( $cf7sa_upload_dir ) ) {
-				mkdir( $cf7sa_upload_dir, 0400 );
+			if ( ! is_dir( $cf7sa_upload_dir ) ) {
+				wp_mkdir_p( $cf7sa_upload_dir );
 			}
 
 			return $cf7sa_upload_dir;
@@ -1098,12 +1129,33 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 			foreach ( $attachment as $key => $value ) {
 				// Check if $value is a non-empty string before proceeding
 				if ( is_string( $value ) && $value !== "" ) {
+					// Security: Validate the source file path
+					$value = realpath( $value );
+					if ( false === $value || ! file_exists( $value ) ) {
+						continue;
+					}
+					
+					// Security: Ensure the source is within allowed directories (CF7 upload tmp)
+					$cf7_upload_dir = realpath( wpcf7_upload_tmp_dir() );
+					if ( false === $cf7_upload_dir || strpos( $value, $cf7_upload_dir ) !== 0 ) {
+						continue;
+					}
+					
 					$tmp_name = $value;
 					$uploads_dir = wpcf7_maybe_add_random_dir( $this->zw_wpcf7_upload_tmp_dir() );
-					$new_file = path_join( $uploads_dir, end( explode( '/', $value ) ) );
+					
+					// Security: Sanitize filename to prevent path traversal
+					$filename = wp_basename( $value );
+					$filename = sanitize_file_name( $filename );
+					$new_file = path_join( $uploads_dir, $filename );
 		
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_copy -- Simple file copy operation
 					if ( copy( $value, $new_file ) ) {
-						chmod( $new_file, 0400 );
+						// Set restrictive permissions using WordPress filesystem functions
+						$stat = stat( dirname( $new_file ) );
+						$perms = $stat['mode'] & 0000666;
+						// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod -- Setting secure permissions
+						chmod( $new_file, $perms );
 						$new_attachment[$key] = $new_file;
 					}
 				}
@@ -1115,6 +1167,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		function handlePaymentIntentSucceeded( $paymentIntent ) {
 			$invoice_id = $paymentIntent->id;
 
+			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required to find transaction by invoice ID
 			$cf7sa_data = get_posts( array(
 				'post_type' => 'cf7sa_data',
 				'posts_per_page' => -1,
@@ -1122,6 +1175,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				'meta_value' => $invoice_id,
 				'fields'           => 'ids',
 			) );
+			// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
 			if ( !empty( $cf7sa_data ) ) {
 				foreach ( $cf7sa_data as $data_id ) {
@@ -1134,6 +1188,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		function handlePaymentMethodFailed( $paymentIntent ) {
 			$invoice_id = $paymentIntent->id;
 
+			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required to find transaction by invoice ID
 			$cf7sa_data = get_posts( array(
 				'post_type' => 'cf7sa_data',
 				'posts_per_page' => -1,
@@ -1141,6 +1196,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				'meta_value' => $invoice_id,
 				'fields'           => 'ids',
 			) );
+			// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
 			if ( !empty( $cf7sa_data ) ) {
 				foreach ( $cf7sa_data as $data_id ) {
@@ -1153,6 +1209,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		function handlePaymentMethodRefunded( $paymentIntent ) {
 			$invoice_id = $paymentIntent->id;
 
+			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required to find transaction by invoice ID
 			$cf7sa_data = get_posts( array(
 				'post_type' => 'cf7sa_data',
 				'posts_per_page' => -1,
@@ -1160,6 +1217,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				'meta_value' => $invoice_id,
 				'fields'           => 'ids',
 			) );
+			// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
 			if ( !empty( $cf7sa_data ) ) {
 				foreach ( $cf7sa_data as $data_id ) {
@@ -1172,6 +1230,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		function handlePaymentMethodPending( $paymentIntent ) {
 			$invoice_id = $paymentIntent->id;
 
+			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required to find transaction by invoice ID
 			$cf7sa_data = get_posts( array(
 				'post_type' => 'cf7sa_data',
 				'posts_per_page' => -1,
@@ -1179,6 +1238,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				'meta_value' => $invoice_id,
 				'fields'           => 'ids',
 			) );
+			// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
 			if ( !empty( $cf7sa_data ) ) {
 				foreach ( $cf7sa_data as $data_id ) {
@@ -1191,6 +1251,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		function handlePaymentMethodExpiered( $paymentIntent ) {
 			$invoice_id = $paymentIntent->id;
 
+			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required to find transaction by invoice ID
 			$cf7sa_data = get_posts( array(
 				'post_type' => 'cf7sa_data',
 				'posts_per_page' => -1,
@@ -1198,6 +1259,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				'meta_value' => $invoice_id,
 				'fields'           => 'ids',
 			) );
+			// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
 			if ( !empty( $cf7sa_data ) ) {
 				foreach ( $cf7sa_data as $data_id ) {
@@ -1210,6 +1272,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		function handlePaymentMethodDisputeCreated( $paymentIntent ) {
 			$invoice_id = $paymentIntent->charge;
 
+			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required to find transaction by invoice ID
 			$cf7sa_data = get_posts( array(
 				'post_type' => 'cf7sa_data',
 				'posts_per_page' => -1,
@@ -1217,6 +1280,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				'meta_value' => $invoice_id,
 				'fields'           => 'ids',
 			) );
+			// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
 			if ( !empty( $cf7sa_data ) ) {
 				foreach ( $cf7sa_data as $data_id ) {
@@ -1229,6 +1293,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		function handlePaymentMethodDisputeUpdated( $paymentIntent ) {
 			$invoice_id = $paymentIntent->charge;
 
+			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required to find transaction by invoice ID
 			$cf7sa_data = get_posts( array(
 				'post_type' => 'cf7sa_data',
 				'posts_per_page' => -1,
@@ -1236,6 +1301,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				'meta_value' => $invoice_id,
 				'fields'           => 'ids',
 			) );
+			// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
 			if ( !empty( $cf7sa_data ) ) {
 				foreach ( $cf7sa_data as $data_id ) {
@@ -1248,6 +1314,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		function handlePaymentMethodDisputeClosed( $paymentIntent ) {
 			$invoice_id = $paymentIntent->charge;
 
+			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required to find transaction by invoice ID
 			$cf7sa_data = get_posts( array(
 				'post_type' => 'cf7sa_data',
 				'posts_per_page' => -1,
@@ -1255,6 +1322,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				'meta_value' => $invoice_id,
 				'fields'           => 'ids',
 			) );
+			// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
 			if ( !empty( $cf7sa_data ) ) {
 				foreach ( $cf7sa_data as $data_id ) {
@@ -1267,6 +1335,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		function handlePaymentMethodUpdated( $paymentIntent ) {
 			$invoice_id = $paymentIntent->id;
 
+			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required to find transaction by invoice ID
 			$cf7sa_data = get_posts( array(
 				'post_type' => 'cf7sa_data',
 				'posts_per_page' => -1,
@@ -1274,6 +1343,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 				'meta_value' => $invoice_id,
 				'fields'           => 'ids',
 			) );
+			// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
 			if ( !empty( $cf7sa_data ) ) {
 				foreach ( $cf7sa_data as $data_id ) {

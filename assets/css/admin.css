@@ -88,4 +88,6 @@ label[for="cf7sa_customer_details"] .arrow-switch:after {
 			transform: rotate(-90deg);
 }input.cf7sa_cus_css{
 	width: 100% !important;
+}#cf7sa_customer_details{
+	display: none;
 }
