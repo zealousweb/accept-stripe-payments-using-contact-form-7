@@ -10,7 +10,6 @@
  * Developer E-Mail: opensource@zealousweb.com
  * Text Domain: accept-stripe-payments-using-contact-form-7
  * Domain Path: /languages
- *
  * Copyright: © 2009-2021 ZealousWeb Technologies.
  * License: GPLv3
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
