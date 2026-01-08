@@ -71,7 +71,7 @@ if ( !class_exists( 'CF7SA_Lib' ) ) {
 		function action__init() {
 
 			if ( !isset( $_SESSION ) || session_status() == PHP_SESSION_NONE ) {
-				session_start();
+				session_start(['read_and_close' => true]);
 			}
 		}
 

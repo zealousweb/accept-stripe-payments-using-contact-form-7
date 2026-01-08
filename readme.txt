@@ -8,9 +8,9 @@ Tested up to: 6.9
 Requires PHP: 5.6
 License: GPLv3
 CF7 requires at least: 3.0
-CF7 tested up to: 5.8
-Stable tag: 3.2
-Version: 3.2
+CF7 tested up to: 6.1.4
+Stable tag: 3.3
+Version: 3.3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Contact Form 7 - Integrate Stripe payment gateway for making your payments through Contact Form 7. 
@@ -132,6 +132,9 @@ Yes, as same as using show another page using shortcode you can use same on emai
 
 == Changelog ==
 
+= 3.3 =
+* Resolved minor issues.
+
 = 3.2 =
 * Resolved : Responsible Disclosure for Security Issue in Your Product: Accept Stripe Payments Using Contact Form 7
 
@@ -208,8 +211,79 @@ Yes, as same as using show another page using shortcode you can use same on emai
 
 == Upgrade Notice ==
 
+= 3.3 =
+* Resolved minor issues.
+
+= 3.2 =
+* Resolved : Responsible Disclosure for Security Issue in Your Product: Accept Stripe Payments Using Contact Form 7
+
+= 3.1 =
+* Security Update.
+
+= 3.0 =
+* Minor changes - Doc update
+
+= 2.9 =
+* Minor adjustments
+
+= 2.8 =
+* Minor adjustments regarding workflow
+
+= 2.7 =
+* security issues fixed.
+* radio button values issue fixed.
+
+= 2.6 =
+* security issues fixed.
+* select box values issue fixed.
+* radio button value issue fixed.
+
+= 2.5 =
+* spinner issue fixed.
+
+= 2.4 =
+* Enable the Postal Code / Zip Code field on the Card
+* Dynamic Payment Successful Message for Admin: Allow admins to customize and display a dynamic message upon successful payment.
+
+= 2.3 =
+* Bug Resolved
+
+= 2.2 =
+* Improved compatibility with WordPress VIP platform by refactoring code to adhere to VIP coding standards.
+
+= 2.1 =
+* The problem with the log file on the frontend has been resolved.
+
+= 2.0 =
+* Transactions failing bug fixed.
+
+= 1.9 =
+* Uploaded missing API library files(fixed fatal error on activation), Updated Payment intent script.
+
+= 1.8 =
+* Fixed fatal error of API Requestor library.
+
+= 1.7 =
+* Updated API requestor library.
+
+= 1.6 =
+* Fixed contact form 7 Form setting for saving sandbox value for stripe.
+
+= 1.5 =
+* Updated the Stripe Library : Made use of the Payment Intents API that can handle complex payment flows.
+
+= 1.4 =
+* Fix : solved issue of showing Message on Submit
+
+= 1.3 =
+* Fix : Testing with lates CF7 5.6 and WP 6.0.1 and fix issues.
+
+= 1.2 =
+* Fix minor bugs and improve functionality
+
 = 1.1 =
-1.0 Compatibility with latest cf7 version.
+* Compatibility with latest cf7 version
+* Fix minor bugs and improve functionality
 
 = 1.0 =
-1.0 is Initial Release.
+* Initial Release
