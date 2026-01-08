@@ -25,7 +25,6 @@ if ( !defined( 'ABSPATH' ) ) exit;
  * @since 3.3
  */
 
-
 if ( !defined( 'CF7SA_VERSION' ) ) {
 	define( 'CF7SA_VERSION', '3.3' ); // Version of plugin
 }
