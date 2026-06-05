@@ -10,8 +10,4 @@
 
 	} );
 
-	jQuery( document ).ready( function() {
-		jQuery( '.wpcf7 form.wpcf7-form.cf7sa' ).off( 'submit' );
-	});
-
 } )( jQuery );

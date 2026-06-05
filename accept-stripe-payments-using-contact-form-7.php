@@ -3,7 +3,7 @@
  * Plugin Name: Accept Stripe Payments Using Contact Form 7
  * Plugin URL: #
  * Description: This plugin will integrate Stripe payment gateway for making your payments through Contact Form 7.
- * Version: 3.4
+ * Version: 3.5
  * Author: ZealousWeb
  * Author URI: https://www.zealousweb.com
  * Developer: The Zealousweb Team
@@ -22,11 +22,11 @@ if ( !defined( 'ABSPATH' ) ) exit;
  * Basic plugin definitions
  *
  * @package Accept Stripe Payments Using Contact Form 7
- * @since 3.4
+ * @since 3.5
  */
 
 if ( !defined( 'CF7SA_VERSION' ) ) {
-	define( 'CF7SA_VERSION', '3.4' ); // Version of plugin
+	define( 'CF7SA_VERSION', '3.5' ); // Version of plugin
 }
 
 if ( !defined( 'CF7SA_FILE' ) ) {
