@@ -23,25 +23,171 @@ function setCookie(cname, cvalue, exdays) {
   }
   (function($) {
       'use strict';
-      
-      $("form.cf7sa :input").change(function() {
-          var flag = 'valid';
-          $('form.wpcf7-form input').each( function(i) {
-              if($(this).attr('type')=='checkbox'){
-                  if( $(this).closest('.wpcf7-checkbox').hasClass('wpcf7-validates-as-required') && $(this).prop('checked') != true ) {
-                      flag = 'invalid';
-                      jQuery('.wpcf7-submit').prop("disabled",true);
-                  }
-              } else if ( $(this).hasClass('wpcf7-validates-as-required') && $(this).val() == '') {
-                  flag = 'invalid';
-                  jQuery('.wpcf7-submit').prop("disabled",true);
-              }
-          });		
-          if( getCookie("wp-sfrom")==1 && flag == 'valid'  ) {
-              jQuery('.wpcf7-submit').prop("disabled",false);
-          } else {
-              jQuery('.wpcf7-submit').prop("disabled",true);
+
+      var getFormId = function($form) {
+          return parseInt($('input[name="_wpcf7"]', $form).val(), 10);
+      };
+
+      var formHasStripe = function($form) {
+          return cf7sa_object.cf7sa_stripe.hasOwnProperty(getFormId($form));
+      };
+
+      var setStripeReady = function($form, isReady) {
+          $form.attr('data-cf7sa-stripe-ready', isReady ? '1' : '0');
+      };
+
+      var isStripeReady = function($form) {
+          return $form.attr('data-cf7sa-stripe-ready') === '1';
+      };
+
+      var isHiddenByConditionalLogic = function($element) {
+          if (!$element.length) {
+              return true;
           }
+
+          if ($element.is(':hidden')) {
+              return true;
+          }
+
+          if ($element.closest('.wpcf7cf-hidden, .wpcf7cf-hide, [aria-hidden="true"]').length) {
+              return true;
+          }
+
+          return $element.parents().filter(function() {
+              var $parent = $(this);
+              return $parent.css('display') === 'none' || $parent.css('visibility') === 'hidden' || $parent.attr('aria-hidden') === 'true';
+          }).length > 0;
+      };
+
+      var isFormReadyToSubmit = function($form) {
+          var isValid = true;
+          var checkedGroups = {};
+
+          $form.find('select.wpcf7-validates-as-required').each(function() {
+              if (isHiddenByConditionalLogic($(this))) {
+                  return;
+              }
+
+              var value = $(this).val();
+              if (value === null || value === '' || ($.isArray(value) && value.length < 1)) {
+                  isValid = false;
+                  return false;
+              }
+          });
+
+          if (!isValid) {
+              return false;
+          }
+
+          $form.find('input.wpcf7-validates-as-required, textarea.wpcf7-validates-as-required').each(function() {
+              var $field = $(this);
+              if ($field.is(':disabled') || $field.attr('type') === 'hidden' || isHiddenByConditionalLogic($field)) {
+                  return;
+              }
+
+              if ($field.is(':checkbox') || $field.is(':radio')) {
+                  var fieldName = $field.attr('name');
+                  if (!fieldName || checkedGroups[fieldName]) {
+                      return;
+                  }
+
+                  checkedGroups[fieldName] = true;
+                  if ($form.find(':input[name="' + fieldName + '"]:checked').length < 1) {
+                      isValid = false;
+                      return false;
+                  }
+
+                  return;
+              }
+
+              if ($.trim($field.val()) === '') {
+                  isValid = false;
+                  return false;
+              }
+          });
+
+          if (!isValid) {
+              return false;
+          }
+
+          $form.find('.wpcf7-checkbox.wpcf7-validates-as-required, .wpcf7-radio.wpcf7-validates-as-required').each(function() {
+              if (isHiddenByConditionalLogic($(this))) {
+                  return;
+              }
+
+              if ($(this).find(':input:checked').length < 1) {
+                  isValid = false;
+                  return false;
+              }
+          });
+
+          if (!isValid) {
+              return false;
+          }
+
+          $form.find('.wpcf7-acceptance').each(function() {
+              var $acceptance = $(this);
+              var $checkbox = $acceptance.find('input:checkbox');
+
+              if ($checkbox.is(':disabled') || $acceptance.hasClass('optional') || isHiddenByConditionalLogic($acceptance)) {
+                  return;
+              }
+
+              if ($acceptance.hasClass('invert')) {
+                  if ($checkbox.is(':checked')) {
+                      isValid = false;
+                      return false;
+                  }
+                  return;
+              }
+
+              if (!$checkbox.is(':checked')) {
+                  isValid = false;
+                  return false;
+              }
+          });
+
+          return isValid;
+      };
+
+      var updateSubmitState = function($form) {
+          if (!formHasStripe($form)) {
+              return;
+          }
+
+          var shouldEnable = isStripeReady($form) && isFormReadyToSubmit($form) && !$form.hasClass('payment-submitting');
+          $('.wpcf7-submit', $form).prop('disabled', !shouldEnable);
+      };
+
+      var scheduleSubmitStateUpdate = function($form) {
+          if (!formHasStripe($form)) {
+              return;
+          }
+
+          updateSubmitState($form);
+
+          if (window.requestAnimationFrame) {
+              window.requestAnimationFrame(function() {
+                  updateSubmitState($form);
+              });
+          }
+
+          $.each([0, 50, 150, 300], function(index, delay) {
+              setTimeout(function() {
+                  updateSubmitState($form);
+              }, delay);
+          });
+      };
+      
+      $(document).on('input change keyup', 'form.cf7sa :input', function() {
+          var $activeForm = $(this).closest('form.cf7sa');
+          scheduleSubmitStateUpdate($activeForm);
+      });
+
+      $(document).on('wpcf7cf_show_group wpcf7cf_hide_group wpcf7cf_change', function(event) {
+          $('form.cf7sa').each(function() {
+              scheduleSubmitStateUpdate($(this));
+          });
       });
   
       if (typeof wpcf7 === 'undefined' || wpcf7 === null) {
@@ -55,6 +201,8 @@ function setCookie(cname, cvalue, exdays) {
           cached: 0,
           inputs: []
       }, wpcf7);
+      wpcf7_cf7sa.isFormReadyToSubmit = isFormReadyToSubmit;
+      wpcf7_cf7sa.updateSubmitState = updateSubmitState;
       $(function() {
           wpcf7_cf7sa.supportHtml5 = (function() {
               var features = {};
@@ -76,21 +224,51 @@ function setCookie(cname, cvalue, exdays) {
           })
       });
       wpcf7_cf7sa.getId = function(form) {
-          return parseInt($('input[name="_wpcf7"]', form).val(), 10)
+          return getFormId($(form))
       };
       wpcf7_cf7sa.stripeTokenHandler = function(token, form) {
           $('input[name="stripeClientSecret"]', form).val(token)
       }
       wpcf7_cf7sa.initForm = function(form) {
           var enablePostalCode = cf7sa_object.enablePostalCode;
+          var $form = $(form);
+          var form_id = wpcf7_cf7sa.getId($form);
+          if (!cf7sa_object.cf7sa_stripe.hasOwnProperty(form_id)) {
+              $form.removeClass('cf7sa');
+              return;
+          }
           if(enablePostalCode == 1){
             var enablePostalCodecf7 = true;
           }else{
             var enablePostalCodecf7 = false;
           } 
-          jQuery('.wpcf7-submit').prop("disabled",true);
-          var $form = $(form);
-          var form_id = wpcf7_cf7sa.getId($form);
+          setStripeReady($form, false);
+          updateSubmitState($form);
+
+          if (window.MutationObserver && !$form.data('cf7saConditionalObserver')) {
+              var conditionalObserver = new MutationObserver(function(mutations) {
+                  var shouldUpdate = false;
+
+                  $.each(mutations, function(index, mutation) {
+                      if (mutation.type === 'attributes' && $.inArray(mutation.attributeName, ['class', 'style', 'aria-hidden', 'hidden']) !== -1) {
+                          shouldUpdate = true;
+                          return false;
+                      }
+                  });
+
+                  if (shouldUpdate) {
+                      scheduleSubmitStateUpdate($form);
+                  }
+              });
+
+              conditionalObserver.observe($form.get(0), {
+                  attributes: true,
+                  subtree: true,
+                  attributeFilter: ['class', 'style', 'aria-hidden', 'hidden']
+              });
+              $form.data('cf7saConditionalObserver', conditionalObserver);
+          }
+
           var stripe;
           var elements;
           var cardElement;
@@ -104,54 +282,36 @@ function setCookie(cname, cvalue, exdays) {
               });
               cardElement.mount('#card-element-' + form_id);
               cardElement.addEventListener('change', function(event) {
-                  setCookie("wp-sfrom", 0, 1);
-                  jQuery('.wpcf7-submit').prop("disabled",true);
+                  setStripeReady($form, false);
                   var displayError = document.getElementById('card-errors-' + form_id);
                   if (event.error) {
-                      jQuery('.wpcf7-submit').prop("disabled",true);
                       displayError.textContent = event.error.message;					
                   } else {
                       displayError.textContent = '';
                   }
                   
                   if (event.complete) {
-                      setCookie("wp-sfrom", 1, 1);
-                      var flag = 'valid';
-                      $('form.wpcf7-form input').each( function(i) {
-                          if( $(this).hasClass('wpcf7-validates-as-required') && $(this).val() == '') {
-                              flag = 'invalid';
-                              jQuery('.wpcf7-submit').prop("disabled",true);
-                          }
-                      });
-                      if( flag == 'invalid' ) {
-                          jQuery('.wpcf7-submit').prop("disabled",true);
-                      } else {
-                          jQuery('.wpcf7-submit').prop("disabled",false);
-                      } 
+                      setStripeReady($form, true);
                   }
+                  updateSubmitState($form);
               })
           }
           
           $form.submit(function(event) {
               
-              if( getCookie("wp-sfrom")!=1 ) {
+              if( !isStripeReady($form) || !isFormReadyToSubmit($form) ) {
+                  updateSubmitState($form);
                   return false;
               }
+              event.preventDefault();
+              event.stopImmediatePropagation();
               
               $('.ajax-loader', $form).addClass('is-active');
-              document.addEventListener('wpcf7invalid', function(event) {
-                  return !1
-              }, !1);
               if (!wpcf7_cf7sa.supportHtml5.placeholder) {
                   $('[placeholder].placeheld', $form).each(function(i, n) {
                       $(n).val('').removeClass('placeheld')
                   })
               }
-              document.addEventListener('submit', async (e) => {
-                  if( getCookie("wp-sfrom")!=1 ) {
-                      return false;
-                  }
-                  e.preventDefault();
                   var formData = new FormData($form.get(0));
                   // Security: Add nonce for CSRF protection
                   formData.append('_wpcf7_nonce', cf7sa_object.nonce);
@@ -165,27 +325,22 @@ function setCookie(cname, cvalue, exdays) {
                       processData: !1,
                       contentType: !1,
                       beforeSend: function() {
-                          $(".wpcf7-spinner").css("visibility", "visible");
+                          $(".wpcf7-spinner", $form).css("visibility", "visible");
                           $('.ajax-loader', $form).addClass('is-active');
-                          $('.wpcf7-form').addClass('payment-submitting');
-                          jQuery('.wpcf7-submit').prop("disabled",true);
-                          var flag = 0;
-                          $('form.wpcf7-form input').each( function(i) {
-                              if( $(this).hasClass('wpcf7-validates-as-required') && $(this).val() == '') {
-                                  $('.wpcf7-spinner').hide();
-                                  $('.wpcf7-response-output').show();
-                                  flag = 1;
-                              }
-                          });
-                          if( flag == 0 ) {
-                              $('.wpcf7-spinner').show();
-                              $('.wpcf7-response-output').hide();
+                          $form.addClass('payment-submitting');
+                          updateSubmitState($form);
+                          if( isFormReadyToSubmit($form) ) {
+                              $('.wpcf7-spinner', $form).show();
+                              $('.wpcf7-response-output', $form).hide();
+                          } else {
+                              $('.wpcf7-spinner', $form).hide();
+                              $('.wpcf7-response-output', $form).show();
                           }
                       },
                       success: function(response) {
                           if (response!='0') {
-                              jQuery('.wpcf7-submit').prop("disabled",true);
-                              setCookie("wp-sfrom", 0, 1);
+                              setStripeReady($form, false);
+                              updateSubmitState($form);
                               const IntentsResponse = stripe.confirmCardPayment(response, {
                                   payment_method: {
                                       card: cardElement,
@@ -195,33 +350,34 @@ function setCookie(cname, cvalue, exdays) {
                                 if (result.paymentIntent) {
                                     if (typeof(result.paymentIntent) !== 'undefined') {
                                         if (result.paymentIntent.status == "succeeded") {
-                                            $('input[name="stripeClientSecret"]').val(result.paymentIntent.id);
+                                            $('input[name="stripeClientSecret"]', $form).val(result.paymentIntent.id);
                                             wpcf7_cf7sa.submit($form, result, elements, cardElement)
                                         }
                                     } else {
-                                        $('.wpcf7-form').removeClass('payment-submitting');
+                                        $form.removeClass('payment-submitting');
                                         $message.html('').append('<span>'+ frontend_msg_object.undefined +'</span>').slideDown('fast');
                                         $("#please-wait").hide();
-                                        $(".wpcf7-spinner").css("visibility", "hidden");
+                                        $(".wpcf7-spinner", $form).css("visibility", "hidden");
+                                        updateSubmitState($form);
                                     }
                                 } else {
-                                     $('.wpcf7-form').removeClass('payment-submitting');
+                                     $form.removeClass('payment-submitting');
                                      $message.html('').append('<span>Payment is faild</span>').slideDown('fast');
                                      $("#please-wait").hide();
-                                     $(".wpcf7-spinner").css("visibility", "hidden");
+                                     $(".wpcf7-spinner", $form).css("visibility", "hidden");
+                                     updateSubmitState($form);
                                 }
                             })
                           }else {
-                              $('.wpcf7-form').removeClass('payment-submitting');
+                              $form.removeClass('payment-submitting');
                               $message.html('').append('<span>Payment is faild</span>').slideDown('fast');
                               $("#please-wait").hide();
-                              $(".wpcf7-spinner").css("visibility", "hidden");
+                              $(".wpcf7-spinner", $form).css("visibility", "hidden");
+                              updateSubmitState($form);
                           }
-                          jQuery('.wpcf7-submit').prop("disabled",false);
                       }
                   });
-                  event.preventDefault()
-              })
+                  return false;
           });
   
   
@@ -415,9 +571,9 @@ function setCookie(cname, cvalue, exdays) {
               wpcf7_cf7sa.refill($form, data);
               wpcf7_cf7sa.triggerEvent(data.into, 'submit', detail);
               if ( $form.hasClass('sent') ) {
-                  $form.each(function() {
-                      this.reset()
-                  });
+                  $form.find('input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]), textarea').val('');
+                  $form.find('input:checkbox, input:radio').prop('checked', false);
+                  $form.find('select').prop('selectedIndex', 0);
                   //wpcf7_cf7sa.toggleSubmit($form)
               }
               if (!wpcf7_cf7sa.supportHtml5.placeholder) {
@@ -429,7 +585,16 @@ function setCookie(cname, cvalue, exdays) {
               $message.attr('role', 'alert');
               $('.screen-reader-response', $form.closest('.wpcf7')).each(function() {
                   var $response = $(this);
-                  $response.html('').attr('role', '').append(data.message);
+                  var $status = $response.find('[role="status"]');
+                  if ( $status.length ) {
+                      $status.html('').append(data.message);
+                  } else {
+                      $response.html('').append($('<p></p>').attr({
+                          'role': 'status',
+                          'aria-live': 'polite',
+                          'aria-atomic': 'true'
+                      }).append(data.message));
+                  }
                   if (data.invalidFields) {
                       var $invalids = $('<ul></ul>');
                       $.each(data.invalidFields, function(i, n) {
@@ -456,11 +621,14 @@ function setCookie(cname, cvalue, exdays) {
               ajaxSuccess(data, status, xhr, $form);
               $('.ajax-loader', $form).removeClass('is-active');
               $("#please-wait").hide();
-              $(".wpcf7-spinner").css("visibility", "hidden");
-              $('.wpcf7-form').removeClass('payment-submitting')
+              $(".wpcf7-spinner", $form).css("visibility", "hidden");
+              $form.removeClass('payment-submitting');
+              updateSubmitState($form);
           }).fail(function(xhr, status, error) {
               var $e = $('<div class="ajax-error"></div>').text(error.message);
-              $form.after($e)
+              $form.after($e);
+              $form.removeClass('payment-submitting');
+              updateSubmitState($form);
           })
       };
       wpcf7_cf7sa.triggerEvent = function(target, name, detail) {
