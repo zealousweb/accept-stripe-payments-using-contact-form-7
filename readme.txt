@@ -4,13 +4,13 @@ Contributors: zealopensource
 Tags: donation, payment, payments, stripe, online payment
 Donate link: http://www.zealousweb.com/payment/
 Requires at least: 4.9
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 5.6
 License: GPLv3
 CF7 requires at least: 3.0
 CF7 tested up to: 6.1.4
-Stable tag: 3.5
-Version: 3.5
+Stable tag: 3.4
+Version: 3.4
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Contact Form 7 - Integrate Stripe payment gateway for making your payments through Contact Form 7. 
@@ -132,10 +132,8 @@ Yes, as same as using show another page using shortcode you can use same on emai
 
 == Changelog ==
 
-= 3.5 =
-* Fixed required acceptance, radio, checkbox, and select validation before Stripe submission.
-
 = 3.4 =
+* Added a new "Open Support Ticket" button to provide quick and direct access to support.
 * Fixed multi-form pages so Stripe validation and submit handling only apply to Stripe-enabled forms.
 
 = 3.3 =
@@ -217,11 +215,9 @@ Yes, as same as using show another page using shortcode you can use same on emai
 
 == Upgrade Notice ==
 
-= 3.5 =
-* Improved required field validation for Stripe forms before enabling submit.
-
 = 3.4 =
-* Fixed Stripe form isolation when Stripe and non-Stripe Contact Form 7 forms are used on the same page.
+* Added a new "Open Support Ticket" button to provide quick and direct access to support.
+* Fixed multi-form pages so Stripe validation and submit handling only apply to Stripe-enabled forms.
 
 = 3.3 =
 * Resolved minor issues.
