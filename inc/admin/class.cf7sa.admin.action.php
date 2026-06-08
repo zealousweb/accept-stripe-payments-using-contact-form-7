@@ -20,7 +20,7 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 	class CF7SA_Admin_Action {
 
 		function __construct()  {
-
+			
 			add_action( 'init',           array( $this, 'action__init' ) );
 			add_action( 'init',           array( $this, 'action__init_99' ), 99 );
 			add_action( 'add_meta_boxes', array( $this, 'action__add_meta_boxes' ) );
@@ -448,6 +448,9 @@ if ( !class_exists( 'CF7SA_Admin_Action' ) ){
 			echo '</select>';
 
 			echo '<input type="submit" id="cf7sa_export_csv" name="cf7sa_export_csv" class="button action" value="' . esc_attr__( 'Export CSV', 'accept-stripe-payments-using-contact-form-7' ) . '"> ';
+			echo '<a class="cf7sa-primary-btn" href="https://support.zealousweb.com/portal/en/home" target="_blank" rel="noopener noreferrer">'
+				. esc_html__( 'Open Support Ticket', 'accept-stripe-payments-using-contact-form-7' ) .
+			'</a>';
 
 		}
 
