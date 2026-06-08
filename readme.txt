@@ -52,6 +52,21 @@ No need for hard setups or extra tools. It's all about keeping things easy and s
 * Individual emails are sent to customer and admin after stripe payment transactions.
 * You can personalize the content of the email sent to the customer and admin after transactions.
 * Recuring Payment accept with stripe and also set option to cancel recuring from admin
+* Google Pay Functionality – Added support for Google Pay, enabling users to make payments using Google Pay
+* Automated PDF Invoices – Instantly generate professional PDF invoices for every successful Stripe payment.
+* Automated Tax Calculation – Enable automated tax calculations in your settings to ensure accuracy and compliance with every payment form.
+* Webhook Customization – Seamlessly send data to external platforms to automate workflows.
+* Multiple Payment Gateways: Integrate and manage both Stripe and PayPal in one form.
+  Noted: Purchasing the two plugins, “Accept PayPal Payments Using Contact Form 7 Pro” and “Accept Stripe Payments Using Contact Form 7,” allows you to enjoy new features. 
+* Compatibility of WordPress VIP
+* Receive payments in 25 different currencies.
+* Cancel partial subscriptions directly from the WordPress admin.
+* Add an Option to Accept Partial Payments or Deposits
+* Add an Abandoned Payment Recovery System
+* Optimized Plugin Performance for Seamless Functionality.
+* Afterpay and Clearpay & Giropay Payment Stripe wallet.
+* Recurring Payment option.
+* Activate both one-time and recurring payment choices.
 
 <strong>[Get more information of Pro version here](https://store.zealousweb.com/accept-stripe-payments-using-contact-form-7-pro)</strong>
 <strong>[Demo for Accept Stripe Payments Using Contact Form 7 Pro](https://demo.zealousweb.com/wordpress-plugins/accept-stripe-payments-using-contact-form-7-pro/)</strong>
